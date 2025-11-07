@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'notifications.dart';
 import 'bolum_hakkinda.dart';
 
-
 void main() {
   // Uygulamanın Riverpod'u kullanması için zorunlu olan ProviderScope
   runApp(const ProviderScope(child: MyApp()));
@@ -68,9 +67,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
         title: const SizedBox(),
         leadingWidth: 60,
         leading: IconButton(
-
-          icon: const Icon(Icons.account_circle,
-              color: Colors.black87, size: 28),
+          icon: const Icon(
+            Icons.account_circle,
+            color: Colors.black87,
+            size: 28,
+          ),
           onPressed: () {
             Navigator.push(
               context,
@@ -78,7 +79,8 @@ class _AnaSayfaState extends State<AnaSayfa> {
                 builder: (context) => const ProfileViewScreen(),
               ),
             );
-          },),
+          },
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -117,7 +119,10 @@ class _AnaSayfaState extends State<AnaSayfa> {
                 itemBuilder: (context, index) {
                   final profil = profiller[index];
                   return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 10,
+                    ),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -213,7 +218,10 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         Expanded(
                           child: Text(
                             '10 Mart: Atölye – “Sektörlere Giriş”',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                         Text(
@@ -232,7 +240,10 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         Expanded(
                           child: Text(
                             '10 Mart: Atölye – “Sektörlere Giriş”',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                         Text(
@@ -252,7 +263,10 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         Expanded(
                           child: Text(
                             '15 Mart: CV Hazırlama Atölyesi',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                         Text(
@@ -275,11 +289,31 @@ class _AnaSayfaState extends State<AnaSayfa> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  _KareButon(ikon: Icons.work_outline, label: "İŞ İLANLARI"),
-                  _KareButon(ikon: Icons.description_outlined, label: "CV OLUŞTUR"),
-                  _KareButon(ikon: Icons.people_outline, label: "MENTÖRLER"),
-                  _KareButon(ikon: Icons.event, label: "ETKİNLİKLER"),
+                children: [
+                  const _KareButon(
+                    ikon: Icons.work_outline,
+                    label: "İŞ İLANLARI",
+                  ),
+                  const _KareButon(
+                    ikon: Icons.description_outlined,
+                    label: "CV OLUŞTUR",
+                  ),
+                  const _KareButon(
+                    ikon: Icons.people_outline,
+                    label: "MÜLAKAT",
+                  ),
+                  _KareButon(
+                    ikon: Icons.school,
+                    label: "AKADEMİSYENLER",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BolumHakkindaPage(),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -339,43 +373,51 @@ class _AnaSayfaState extends State<AnaSayfa> {
   }
 }
 
-// 🔹 Kare Buton Bileşeni
 class _KareButon extends StatelessWidget {
   final IconData ikon;
   final String label;
+  final VoidCallback? onTap; // 🔹 eklendi
 
-  const _KareButon({required this.ikon, required this.label, super.key});
+  const _KareButon({
+    required this.ikon,
+    required this.label,
+    this.onTap, // 🔹 eklendi
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 90,
-          height: 90,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 3),
-              ),
-            ],
+    return GestureDetector(
+      onTap: onTap, // 🔹 tıklama eklendi
+      child: Column(
+        children: [
+          Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Icon(ikon, color: Colors.black26, size: 35),
           ),
-          child: Icon(ikon, color: Colors.black26, size: 35),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.black87,
-            fontWeight: FontWeight.w500,
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
