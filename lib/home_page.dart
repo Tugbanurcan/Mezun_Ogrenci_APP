@@ -292,11 +292,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
                 children: [
                   const _KareButon(
                     ikon: Icons.work_outline,
-                    label: "İŞ İLANLARI",
+                    label: "cv",
                   ),
                   const _KareButon(
                     ikon: Icons.description_outlined,
-                    label: "CV OLUŞTUR",
+                    label: "formlar",
                   ),
                   const _KareButon(
                     ikon: Icons.people_outline,
