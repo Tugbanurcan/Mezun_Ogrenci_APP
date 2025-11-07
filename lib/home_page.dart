@@ -3,6 +3,8 @@ import 'widgets/alt_icon.dart';
 import 'profile_view_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'notifications.dart';
+import 'bolum_hakkinda.dart';
+
 
 void main() {
   // Uygulamanın Riverpod'u kullanması için zorunlu olan ProviderScope
