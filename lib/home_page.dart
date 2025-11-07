@@ -4,6 +4,8 @@ import 'profile_view_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'notifications.dart';
 import 'bolum_hakkinda.dart';
+import 'cv_hakkinda.dart';
+
 
 void main() {
   // Uygulamanın Riverpod'u kullanması için zorunlu olan ProviderScope
@@ -290,10 +292,19 @@ class _AnaSayfaState extends State<AnaSayfa> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const _KareButon(
+                  _KareButon(
                     ikon: Icons.work_outline,
-                    label: "cv",
+                    label: "CV",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CvHakkindaPage(),
+                        ),
+                      );
+                    },
                   ),
+
                   const _KareButon(
                     ikon: Icons.description_outlined,
                     label: "formlar",
