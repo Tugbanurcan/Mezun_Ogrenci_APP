@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'notifications.dart';
 import 'bolum_hakkinda.dart';
 import 'cv_hakkinda.dart';
+import 'mulakat_page.dart';
 
 
 void main() {
