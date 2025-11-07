@@ -7,7 +7,6 @@ import 'bolum_hakkinda.dart';
 import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
 
-
 void main() {
   // Uygulamanın Riverpod'u kullanması için zorunlu olan ProviderScope
   runApp(const ProviderScope(child: MyApp()));
@@ -310,10 +309,17 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     ikon: Icons.description_outlined,
                     label: "formlar",
                   ),
-                  const _KareButon(
+                  _KareButon(
                     ikon: Icons.people_outline,
                     label: "MÜLAKAT",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MulakatPage()),
+                      );
+                    },
                   ),
+
                   _KareButon(
                     ikon: Icons.school,
                     label: "AKADEMİSYENLER",
