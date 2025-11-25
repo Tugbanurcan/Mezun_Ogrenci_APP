@@ -81,7 +81,7 @@ class _MulakatPageState extends State<MulakatPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              "🎯 Mülakatta Dikkat Edilmesi Gerekenler",
+              " Mülakatta Dikkat Edilmesi Gerekenler",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
@@ -112,7 +112,7 @@ class _MulakatPageState extends State<MulakatPage> {
         ),
       ),
 
-      // 🔹 Alt Navigasyon Bar (her sayfada aynı)
+      // 🔹 Alt Bar (tüm sayfalarla aynı görünüm)
       bottomNavigationBar: Container(
         height: 70,
         decoration: BoxDecoration(
@@ -129,26 +129,26 @@ class _MulakatPageState extends State<MulakatPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
+              ikon: Icons.chat,
+              label: 'Chat',
               isSelected: _selectedIndex == 0,
               onTap: () => _onItemTapped(0),
             ),
             AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
+              ikon: Icons.event,
+              label: 'Etkinlikler',
               isSelected: _selectedIndex == 1,
               onTap: () => _onItemTapped(1),
             ),
             AltIcon(
-              ikon: Icons.celebration,
-              label: 'Etkinlik',
+              ikon: Icons.home,
+              label: 'Ana Sayfa',
               isSelected: _selectedIndex == 2,
               onTap: () => _onItemTapped(2),
             ),
             AltIcon(
-              ikon: Icons.people,
-              label: 'Mentör',
+              ikon: Icons.person_search,
+              label: 'Mentor Bul',
               isSelected: _selectedIndex == 3,
               onTap: () => _onItemTapped(3),
             ),
