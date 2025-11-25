@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'widgets/alt_icon.dart';
+import 'home_page.dart';
 
 class BolumHakkindaPage extends StatefulWidget {
   const BolumHakkindaPage({super.key});
@@ -79,7 +80,18 @@ class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black),
+
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const AnaSayfa()),
+            );
+          },
+        ),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -213,10 +225,7 @@ class _AkademisyenKart extends StatelessWidget {
           Text(
             isim,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           ),
           const SizedBox(height: 6),
           Container(
@@ -233,10 +242,7 @@ class _AkademisyenKart extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             mail,
-            style: const TextStyle(
-              fontSize: 11,
-              color: Colors.black54,
-            ),
+            style: const TextStyle(fontSize: 11, color: Colors.black54),
             textAlign: TextAlign.center,
           ),
         ],
