@@ -14,10 +14,18 @@ class MulakatPage extends StatefulWidget {
 class _MulakatPageState extends State<MulakatPage> {
   int _selectedIndex = 3; // Alt bardaki seçili ikon
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  setState(() {
+    _selectedIndex = index;
+  });
+
+  if (index == 2) { // Ana Sayfa ikonu
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const AnaSayfa()),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
