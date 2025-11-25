@@ -34,12 +34,18 @@ class AnaSayfa extends StatefulWidget {
 class _AnaSayfaState extends State<AnaSayfa> {
   int _selectedIndex = 2; // Ana sayfa varsayılan olarak seçili
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  setState(() {
+    _selectedIndex = index;
+  });
 
-    // Burada sayfa geçişlerini yönetebilirsin (örn. Navigator.push)
+  if (index == 2) { // Ana Sayfa ikonu
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const AnaSayfa()),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
