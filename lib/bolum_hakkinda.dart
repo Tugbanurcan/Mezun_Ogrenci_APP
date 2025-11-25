@@ -13,14 +13,18 @@ class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
   int _selectedIndex = 2; // Ana sayfa seçili varsayılan
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  setState(() {
+    _selectedIndex = index;
+  });
 
-    //  Burada sayfa yönlendirmelerini yapabilirsin
-    // Örneğin:
-    // if (index == 2) Navigator.push(context, MaterialPageRoute(builder: (_) => const AnaSayfa()));
+  if (index == 2) { // Ana Sayfa ikonu
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const AnaSayfa()),
+    );
   }
+}
+
 
   final List<Map<String, String>> akademisyenler = [
     {
