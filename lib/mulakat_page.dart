@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'widgets/alt_icon.dart';
 import 'notifications.dart';
 import 'profile_view_screen.dart';
+import 'home_page.dart';
 
 class MulakatPage extends StatefulWidget {
   const MulakatPage({super.key});
@@ -25,28 +26,45 @@ class _MulakatPageState extends State<MulakatPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leadingWidth: 60,
-        leading: IconButton(
-          icon: const Icon(Icons.account_circle, color: Colors.black87, size: 28),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
-            );
-          },
+        leadingWidth: 110,
+        leading: Row(
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.arrow_back,
+                color: Colors.black87,
+                size: 26,
+              ),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.account_circle,
+                color: Colors.black87,
+                size: 28,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
+                );
+              },
+            ),
+          ],
         ),
-        title: const Text(
-          "Mülakat",
-          style: TextStyle(
-            fontSize: 22,
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Colors.black54),
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              color: Colors.black54,
+            ),
             onPressed: () {
               Navigator.push(
                 context,
