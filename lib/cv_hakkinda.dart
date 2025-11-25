@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'widgets/alt_icon.dart';
 import 'notifications.dart';
 import 'profile_view_screen.dart';
+import 'home_page.dart';
 
 class CvHakkindaPage extends StatefulWidget {
   const CvHakkindaPage({super.key});
@@ -25,15 +26,36 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leadingWidth: 60,
-        leading: IconButton(
-          icon: const Icon(Icons.account_circle, color: Colors.black87, size: 28),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
-            );
-          },
+        leadingWidth: 110,
+        leading: Row(
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.arrow_back,
+                color: Colors.black87,
+                size: 26,
+              ),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.account_circle,
+                color: Colors.black87,
+                size: 28,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
+                );
+              },
+            ),
+          ],
         ),
         title: const Text(
           "CV",
@@ -46,7 +68,10 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Colors.black54),
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              color: Colors.black54,
+            ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -67,26 +92,28 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
-            Text("1. Öz ve net olmalı\n"
-                "Gereksiz uzun cümlelerden kaçın, sadece önemli bilgileri yaz.\n"
-                "2. Yazım ve imla hatası olmamalı\n"
-                "CV’deki küçük bir hata bile ciddiyetini zedeler.\n"
-                "3. Güncel bilgiler içermeli\n"
-                "E-posta, telefon, mezuniyet yılı gibi bilgiler doğru ve güncel olmalı.\n"
-                "4. Tarih sırası tersten olmalı (yeniden eskiye)\n"
-                "Deneyim ve eğitim bilgilerinde en güncel olan üstte yer almalı.\n"
-                "5. Düzenli ve sade görünüm\n"
-                "Karmaşık tasarım ve fazla renk kullanma, okunabilir font tercih et.\n"
-                "6. Gerçek bilgiler yer almalı\n"
-                "Abartılı veya doğrulanamaz şeylerden kaçın.\n"
-                "7. Pozisyona göre özelleştirilmeli\n"
-                "Her işe aynı CV’yi göndermek yerine küçük düzenlemeler yap.\n"
-                "8. Etkisiz bilgilerden kaçın\n"
-                "TC kimlik, medeni hal, doğum tarihi gibi bilgileri ekleme.\n"
-                "9. Fotoğraf sadece gerekiyorsa\n"
-                "Profesyonel ve sade bir fotoğraf seç.\n"
-                "10. Başarı ve katkı odaklı anlatım\n"
-                "“Yaptım” demek yerine “şu sonucu elde ettim” tarzında anlat."),
+            Text(
+              "1. Öz ve net olmalı\n"
+              "Gereksiz uzun cümlelerden kaçın, sadece önemli bilgileri yaz.\n"
+              "2. Yazım ve imla hatası olmamalı\n"
+              "CV’deki küçük bir hata bile ciddiyetini zedeler.\n"
+              "3. Güncel bilgiler içermeli\n"
+              "E-posta, telefon, mezuniyet yılı gibi bilgiler doğru ve güncel olmalı.\n"
+              "4. Tarih sırası tersten olmalı (yeniden eskiye)\n"
+              "Deneyim ve eğitim bilgilerinde en güncel olan üstte yer almalı.\n"
+              "5. Düzenli ve sade görünüm\n"
+              "Karmaşık tasarım ve fazla renk kullanma, okunabilir font tercih et.\n"
+              "6. Gerçek bilgiler yer almalı\n"
+              "Abartılı veya doğrulanamaz şeylerden kaçın.\n"
+              "7. Pozisyona göre özelleştirilmeli\n"
+              "Her işe aynı CV’yi göndermek yerine küçük düzenlemeler yap.\n"
+              "8. Etkisiz bilgilerden kaçın\n"
+              "TC kimlik, medeni hal, doğum tarihi gibi bilgileri ekleme.\n"
+              "9. Fotoğraf sadece gerekiyorsa\n"
+              "Profesyonel ve sade bir fotoğraf seç.\n"
+              "10. Başarı ve katkı odaklı anlatım\n"
+              "“Yaptım” demek yerine “şu sonucu elde ettim” tarzında anlat.",
+            ),
           ],
         ),
       ),
