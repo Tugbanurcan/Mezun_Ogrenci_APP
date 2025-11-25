@@ -14,10 +14,18 @@ class CvHakkindaPage extends StatefulWidget {
 class _CvHakkindaPageState extends State<CvHakkindaPage> {
   int _selectedIndex = 4; // Alt bardaki seçili ikon (örnek)
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  setState(() {
+    _selectedIndex = index;
+  });
+
+  if (index == 2) { // Ana Sayfa ikonu
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const AnaSayfa()),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
