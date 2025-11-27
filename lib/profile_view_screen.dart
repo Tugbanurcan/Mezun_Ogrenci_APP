@@ -1,199 +1,343 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:url_launcher/url_launcher.dart'; // pubspec.yaml'a eklemeyi unutmayın!
-import 'dart:ui';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 
 import '../providers/user_provider.dart';
 import 'profie_edit_screen.dart';
-import '';
+
+// Renk Paleti (Sabitler)
+const Color kPrimaryColor = Color(0xFFA65DD4);
+const Color kSecondaryColor = Color.fromARGB(104, 105, 27, 154);
+const Color kBackgroundColor = Color(0xFFF8F9FA);
 
 class ProfileViewScreen extends ConsumerWidget {
   const ProfileViewScreen({super.key});
 
-  static const double _padding = 20.0;
-  static const double _avatarSize = 100.0;
-  static const double _spacingSmall = 8.0;
-  static const double _spacingMedium = 16.0;
-  static const double _titleFontSize = 24.0;
-  static const double _subtitleFontSize = 18.0;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userProfile = ref.watch(userProfileNotifierProvider);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: _buildAppBar(),
-      body: _buildBody(context, ref, userProfile),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToEditProfile(context),
-        backgroundColor: const Color.fromARGB(255, 166, 93, 212),
-        shape: const CircleBorder(),
-        elevation: 8,
-        child: const Icon(Icons.edit, color: Colors.white, size: 24),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white.withOpacity(0.4),
-      elevation: 0,
-      toolbarHeight: 50,
-      flexibleSpace: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            color: Colors.white.withOpacity(0.2),
-          ),
+      backgroundColor: kBackgroundColor,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
-      ),
-      title: Padding(
-        padding: const EdgeInsets.only(bottom: 6.0), // Yazıyı biraz yukarı taşı
-        child: const Text(
-          'Profilim',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.w500,
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.edit, color: Colors.white, size: 22),
+              onPressed: () => _navigateToEditProfile(context),
+            ),
           ),
-        ),
-      ),
-      centerTitle: true,
-    );
-  }
-
-  Widget _buildBody(BuildContext context, WidgetRef ref, userProfile) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: _spacingMedium),
-          _buildProfileAvatar(userProfile),
-          const SizedBox(height: _spacingMedium),
-          _buildProfileHeader(context, ref, userProfile),
-          const SizedBox(height: _spacingMedium),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: _padding),
-            child: _buildProfileSections(context, ref, userProfile),
-          ),
-          const SizedBox(height: 80),
         ],
       ),
-    );
-  }
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // ÜST KISIM (Header + Avatar) - BURASI AYNI KALDI
+            Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                // Arka Plan Gradient
+                Container(
+                  height: size.height * 0.28,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color.fromARGB(25, 105, 27, 154), kPrimaryColor],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
+                  ),
+                ),
+                // Profil Fotoğrafı
+                Positioned(
+                  bottom: -60,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: kBackgroundColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 65,
+                      backgroundColor: Colors.grey.shade200,
+                      backgroundImage: userProfile.photoPath != null
+                          ? FileImage(File(userProfile.photoPath!))
+                          : null,
+                      child: userProfile.photoPath == null
+                          ? Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Colors.grey.shade400,
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
+              ],
+            ),
 
-  Widget _buildProfileAvatar(userProfile) {
-    return Center(
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          shape: BoxShape.circle,
-          image: userProfile.photoPath != null
-              ? DecorationImage(
-            image: FileImage(File(userProfile.photoPath!)),
-            fit: BoxFit.cover,
-          )
-              : null,
+            const SizedBox(height: 70), // Avatar boşluğu
+            // --- DEĞİŞİKLİK BURADA YAPILDI ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  // İsim ve İkonlar YAN YANA (Row)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center, // Ortala
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // 1. İsim
+                      Flexible(
+                        child: Text(
+                          userProfile.name,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+
+                      // 2. Sosyal İkonlar (İsmin yanına)
+                      if (userProfile.linkedin.isNotEmpty ||
+                          userProfile.github.isNotEmpty) ...[
+                        const SizedBox(width: 10), // İsimle ikon arasına boşluk
+
+                        if (userProfile.linkedin.isNotEmpty)
+                          _buildSmallSocialIcon(
+                            FontAwesomeIcons.linkedinIn,
+                            const Color(0xFF0077B5),
+                            userProfile.linkedin,
+                            context,
+                          ),
+
+                        if (userProfile.linkedin.isNotEmpty &&
+                            userProfile.github.isNotEmpty)
+                          const SizedBox(width: 8), // İki ikon arası boşluk
+
+                        if (userProfile.github.isNotEmpty)
+                          _buildSmallSocialIcon(
+                            FontAwesomeIcons.github,
+                            const Color(0xFF333333),
+                            userProfile.github,
+                            context,
+                          ),
+                      ],
+                    ],
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  // 3. Unvan (İsmin Altında)
+                  Text(
+                    userProfile.title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // --- DEĞİŞİKLİK SONU ---
+            const SizedBox(height: 25),
+
+            // KARTLAR (BİLGİLER)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  _buildContentCard(
+                    title: "Hakkında",
+                    icon: Icons.info_outline,
+                    content: Text(
+                      userProfile.about,
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                  _buildContentCard(
+                    title: "Yetkinlikler",
+                    icon: Icons.star_border,
+                    action: IconButton(
+                      icon: const Icon(Icons.add_circle, color: kPrimaryColor),
+                      onPressed: () => _showAddSkillDialog(context, ref),
+                    ),
+                    content: _buildSkillsWrap(userProfile.skills),
+                  ),
+                  _buildContentCard(
+                    title: "Eğitim",
+                    icon: Icons.school_outlined,
+                    content: Text(
+                      userProfile.education,
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+
+                  _buildContentCard(
+                    title: "İletişim",
+                    icon: Icons.mail,
+                    content: Text(
+                      userProfile.communication,
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        child: userProfile.photoPath == null
-            ? const Icon(Icons.person, size: 50, color: Colors.white)
-            : null,
       ),
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context, WidgetRef ref, userProfile) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: _padding),
+  Widget _buildContentCard({
+    required String title,
+    required IconData icon,
+    required Widget content,
+    Widget? action,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.08),
+            spreadRadius: 2,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            userProfile.name,
-            style: const TextStyle(
-              fontSize: _titleFontSize,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: _spacingSmall / 2),
-          Text(
-            userProfile.title,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black54,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: _spacingMedium),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSocialIcon(
-                FontAwesomeIcons.linkedinIn,
-                Colors.blueAccent,
-                userProfile.linkedin,
-                context,
+              Row(
+                children: [
+                  Icon(icon, color: kPrimaryColor, size: 22),
+                  const SizedBox(width: 10),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: _spacingMedium),
-              _buildSocialIcon(
-                FontAwesomeIcons.github,
-                Colors.black,
-                userProfile.github,
-                context,
-              ),
+              if (action != null) action,
             ],
           ),
+          const Divider(height: 25, thickness: 0.5),
+          content,
         ],
       ),
     );
   }
 
-  void _launchUrlSafely(String urlString, BuildContext context) async {
-    try {
-      final Uri uri = Uri.parse(urlString);
-
-      // Dış tarayıcıda aç
-      await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
+  Widget _buildSkillsWrap(List<String> skills) {
+    if (skills.isEmpty) {
+      return const Text(
+        "Henüz yetkinlik eklenmemiş.",
+        style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
       );
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Bağlantı açılırken hata: $e'),
-            backgroundColor: Colors.red,
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: skills.map((skill) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: kPrimaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: kPrimaryColor.withOpacity(0.3)),
+          ),
+          child: Text(
+            skill,
+            style: const TextStyle(
+              color: kPrimaryColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
           ),
         );
-      }
-    }
+      }).toList(),
+    );
   }
 
-  Widget _buildSocialIcon(
-      IconData icon,
-      Color color,
-      String handle,
-      BuildContext context,
-      ) {
-    String platform = (icon == FontAwesomeIcons.linkedinIn)
+  // YENİ: Küçük İkon Tasarımı (İsmin yanına sığması için)
+  Widget _buildSmallSocialIcon(
+    IconData icon,
+    Color color,
+    String handle,
+    BuildContext context,
+  ) {
+    String url = (icon == FontAwesomeIcons.linkedinIn)
         ? 'https://www.linkedin.com/in/$handle'
         : 'https://github.com/$handle';
 
-    return InkWell(
-      onTap: () => _launchUrlSafely(platform, context),
-      borderRadius: BorderRadius.circular(20),
+    return GestureDetector(
+      onTap: () => _launchUrlSafely(url, context),
       child: Container(
-        width: 40,
-        height: 40,
+        width: 32, // Küçük boyut
+        height: 32,
         decoration: BoxDecoration(
+          color: color.withOpacity(0.1), // Hafif renkli arka plan
           shape: BoxShape.circle,
-          color: color.withOpacity(0.1),
         ),
-        child: Center(child: FaIcon(icon, color: color, size: 20)),
+        child: Center(
+          child: FaIcon(icon, color: color, size: 16), // İkon boyutu küçük
+        ),
       ),
     );
   }
@@ -205,29 +349,56 @@ class ProfileViewScreen extends ConsumerWidget {
     );
   }
 
+  void _launchUrlSafely(String urlString, BuildContext context) async {
+    try {
+      final Uri uri = Uri.parse(urlString);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Bağlantı açılamadı: $e')));
+      }
+    }
+  }
+
   void _showAddSkillDialog(BuildContext context, WidgetRef ref) {
     final TextEditingController controller = TextEditingController();
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Yeni Yetkinlik Ekle'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Yetkinlik Ekle',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'Yetkinlik adı',
+          decoration: InputDecoration(
+            hintText: 'Örn: Flutter, Python, Dart...',
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
+            child: const Text('İptal', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kPrimaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             onPressed: () {
-              final skill = controller.text.trim();
-              if (skill.isNotEmpty) {
-                ref.read(userProfileNotifierProvider.notifier).addSkill(skill);
+              if (controller.text.trim().isNotEmpty) {
+                ref
+                    .read(userProfileNotifierProvider.notifier)
+                    .addSkill(controller.text.trim());
               }
               Navigator.pop(context);
             },
@@ -236,130 +407,5 @@ class ProfileViewScreen extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  Widget _buildProfileSections(
-      BuildContext context, WidgetRef ref, userProfile) {
-    return Column(
-      children: [
-        _buildInfoSection(
-          context,
-          title: 'Hakkında',
-          content: userProfile.about,
-          showSectionActions: false,
-        ),
-        _buildInfoSection(
-          context,
-          title: 'Yetkinlikler',
-          contentWidget: _buildSkillsRow(userProfile.skills),
-          onAdd: () => _showAddSkillDialog(context, ref),
-        ),
-        _buildInfoSection(
-          context,
-          title: 'Eğitim',
-          content: userProfile.education,
-          showSectionActions: false,
-          onAdd: () => print('Yeni Eğitim Ekle'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoSection(
-      BuildContext context, {
-        required String title,
-        String? content,
-        Widget? contentWidget,
-        bool showSectionActions = true,
-        VoidCallback? onAdd,
-      }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: _spacingMedium),
-      child: Container(
-        padding: const EdgeInsets.all(_padding),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              spreadRadius: 0,
-              blurRadius: 15,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: _subtitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                if (showSectionActions)
-                  IconButton(
-                    icon: const Icon(
-                      Icons.add_circle_outline,
-                      size: 24,
-                      color: Colors.black54,
-                    ),
-                    onPressed: onAdd,
-                    tooltip: 'Yeni ${title} Ekle',
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-              ],
-            ),
-            const SizedBox(height: _spacingSmall),
-            if (content != null)
-              Text(
-                content,
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
-              ),
-            if (contentWidget != null) contentWidget,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSkillsRow(List<String> skills) {
-    return Wrap(
-      spacing: _spacingSmall,
-      runSpacing: _spacingSmall,
-      children: skills
-          .map(
-            (skill) =>
-            _buildSkillChip(skill, const Color.fromARGB(255, 166, 93, 212)),
-      )
-          .toList(),
-    );
-  }
-
-  Widget _buildSkillChip(String label, Color color) {
-    return Chip(
-        label: Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-        ),
-        backgroundColor: color.withOpacity(0.1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: color.withOpacity(0.3), width: 1),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        );
   }
 }
