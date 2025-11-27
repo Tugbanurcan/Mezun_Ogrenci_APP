@@ -4,17 +4,18 @@ import '../models/user_profile.dart';
 // 1. Notifier Tanımı
 class UserProfileNotifier extends StateNotifier<UserProfile> {
   UserProfileNotifier()
-      : super(
-    UserProfile(
-      name: '',
-      title: '',
-      about: '',
-      linkedin: '',
-      github: '',
-      education: '',
-      skills: [],
-    ),
-  );
+    : super(
+        UserProfile(
+          name: '',
+          title: '',
+          about: '',
+          linkedin: '',
+          github: '',
+          education: '',
+          communication: '',
+          skills: [],
+        ),
+      );
 
   // Bu metodu ekle:
   void updateProfile({
@@ -24,6 +25,7 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
     String? linkedin,
     String? github,
     String? education,
+    String? communication,
     String? photoPath,
   }) {
     state = state.copyWith(
@@ -33,6 +35,7 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
       linkedin: linkedin ?? state.linkedin,
       github: github ?? state.github,
       education: education ?? state.education,
+      communication: communication ?? state.communication,
       photoPath: photoPath ?? state.photoPath,
     );
   }
@@ -45,6 +48,6 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
 
 // 2. Provider Tanımı
 final userProfileNotifierProvider =
-StateNotifierProvider<UserProfileNotifier, UserProfile>((ref) {
-  return UserProfileNotifier();
-});
+    StateNotifierProvider<UserProfileNotifier, UserProfile>((ref) {
+      return UserProfileNotifier();
+    });

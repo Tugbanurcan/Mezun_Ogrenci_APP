@@ -8,6 +8,7 @@ class UserProfile {
   final String linkedin;
   final String github;
   final String education;
+  final String communication;
   final List<String> skills;
   final String? photoPath; // ← Bunu ekledik
 
@@ -18,6 +19,7 @@ class UserProfile {
     required this.linkedin,
     required this.github,
     required this.education,
+    required this.communication,
     required this.skills,
     this.photoPath, // ← opsiyonel
   });
@@ -29,6 +31,7 @@ class UserProfile {
     String? linkedin,
     String? github,
     String? education,
+    String? communication,
     List<String>? skills,
     String? photoPath, // ← Bunu ekledik
   }) {
@@ -39,6 +42,7 @@ class UserProfile {
       linkedin: linkedin ?? this.linkedin,
       github: github ?? this.github,
       education: education ?? this.education,
+      communication: communication ?? this.communication,
       skills: skills ?? this.skills,
       photoPath: photoPath ?? this.photoPath, // ← Bunu ekledik
     );
@@ -48,15 +52,18 @@ class UserProfile {
 // Notifier
 class UserProfileNotifier extends StateNotifier<UserProfile> {
   UserProfileNotifier()
-      : super(UserProfile(
-    name: '',
-    title: '',
-    about: '',
-    linkedin: '',
-    github: '',
-    education: '',
-    skills: [],
-  ));
+    : super(
+        UserProfile(
+          name: '',
+          title: '',
+          about: '',
+          linkedin: '',
+          github: '',
+          education: '',
+          communication: '',
+          skills: [],
+        ),
+      );
 
   // Profil güncelleme metodu
   void updateProfile({
@@ -66,6 +73,7 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
     String? linkedin,
     String? github,
     String? education,
+    String? communication,
   }) {
     state = state.copyWith(
       name: name,
@@ -74,6 +82,7 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
       linkedin: linkedin,
       github: github,
       education: education,
+      communication: communication,
     );
   }
 
@@ -85,6 +94,6 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
 
 // Provider
 final userProfileNotifierProvider =
-StateNotifierProvider<UserProfileNotifier, UserProfile>(
+    StateNotifierProvider<UserProfileNotifier, UserProfile>(
       (ref) => UserProfileNotifier(),
-);
+    );
