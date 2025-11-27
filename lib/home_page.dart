@@ -6,6 +6,7 @@ import 'notifications.dart';
 import 'bolum_hakkinda.dart';
 import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
+import 'community_page.dart';
 
 void main() {
   // Uygulamanın Riverpod'u kullanması için zorunlu olan ProviderScope
@@ -311,9 +312,15 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     },
                   ),
 
-                  const _KareButon(
+                   _KareButon(
                     ikon: Icons.description_outlined,
                     label: "formlar",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CommunityPage()),
+                      );
+                    },
                   ),
                   _KareButon(
                     ikon: Icons.people_outline,

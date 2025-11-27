@@ -43,64 +43,67 @@ class _RegisterPageState extends State<RegisterPage> {
         context: context,
         barrierDismissible: false,
         barrierColor: Colors.black.withOpacity(0.5),
-        builder: (_) => Dialog(
-          backgroundColor: Colors.transparent,
-          child: Center(
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              elevation: 8,
-              child: Padding(
-                padding:
-                const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 60,
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Başarılı!",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Kayıt işleminiz başarıyla tamamlandı.",
-                      style: TextStyle(fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 25),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context); // Dialog kapat
-                        Navigator.pop(context); // Login sayfasına dön
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+        builder: (_) =>
+            Dialog(
+              backgroundColor: Colors.transparent,
+              child: Center(
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 8,
+                  child: Padding(
+                    padding:
+                    const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 60,
                         ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 12),
-                      ),
-                      child: const Text(
-                        "Tamam",
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
-                    )
-                  ],
+                        const SizedBox(height: 20),
+                        const Text(
+                          "Başarılı!",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          "Kayıt işleminiz başarıyla tamamlandı.",
+                          style: TextStyle(fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 25),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context); // Dialog kapat
+                            Navigator.pop(context); // Login sayfasına dön
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme
+                                .of(context)
+                                .primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 12),
+                          ),
+                          child: const Text(
+                            "Tamam",
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
       );
     }
   }
@@ -115,17 +118,19 @@ class _RegisterPageState extends State<RegisterPage> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 25),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         margin: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300],
+          color: isSelected ? Theme
+              .of(context)
+              .primaryColor : Colors.grey[300],
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           type,
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.black87,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -135,7 +140,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Theme.of(context).primaryColor;
+    final Color primaryColor = Theme
+        .of(context)
+        .primaryColor;
+
+    // ✨ Boşlukları tek yerden ayarlayabilirsin
+    const double gapSmall = 30;
+    const double Small = 20 ;
+    const double gapMedium = 25;
+    const double Medium = 50;
+    const double gapLarge = 40;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -155,7 +169,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     color: primaryColor,
                   ),
                 ),
-                const SizedBox(height: 40),
+
+                SizedBox(height: gapLarge),
 
                 // Kullanıcı Adı
                 TextFormField(
@@ -164,13 +179,15 @@ class _RegisterPageState extends State<RegisterPage> {
                     labelText: "Kullanıcı Adı",
                     prefixIcon: Icon(Icons.person),
                   ),
-                  validator: (value) => value == null || value.isEmpty
+                  validator: (value) =>
+                  value == null || value.isEmpty
                       ? "Kullanıcı adı giriniz"
                       : null,
                 ),
-                const SizedBox(height: 20),
 
-                // 🔒 Şifre (göz ikonlu)
+                SizedBox(height: gapMedium),
+
+                // Şifre
                 TextFormField(
                   controller: passwordController,
                   obscureText: !_isPasswordVisible,
@@ -179,9 +196,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                        _isPasswordVisible ? Icons.visibility : Icons
+                            .visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -192,9 +208,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   validator: validatePassword,
                 ),
-                const SizedBox(height: 20),
 
-                // 🔒 Şifre (Tekrar) (göz ikonlu)
+                SizedBox(height: gapMedium),
+
+                // Şifre Tekrar
                 TextFormField(
                   controller: confirmPasswordController,
                   obscureText: !_isConfirmPasswordVisible,
@@ -203,9 +220,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isConfirmPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                        _isConfirmPasswordVisible ? Icons.visibility : Icons
+                            .visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -222,17 +238,20 @@ class _RegisterPageState extends State<RegisterPage> {
                     return validatePassword(value);
                   },
                 ),
-                const SizedBox(height: 20),
 
-                // Kullanıcı Tipi Seçimi
+                SizedBox(height: Medium),
+
+                // Kullanıcı Tipi
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     userTypeSelector("Öğrenci"),
+                    SizedBox(width: 15),
                     userTypeSelector("Mezun"),
                   ],
                 ),
-                const SizedBox(height: 20),
+
+                SizedBox(height: gapMedium),
 
                 // Mentör Checkbox
                 if (selectedUserType == "Mezun")
@@ -246,7 +265,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                     controlAffinity: ListTileControlAffinity.leading,
                   ),
-                const SizedBox(height: 10),
+
+                SizedBox(height: Small),
 
                 // Kayıt Ol Butonu
                 SizedBox(
@@ -260,7 +280,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
 
-                // Giriş sayfasına dön
+                SizedBox(height: gapSmall),
+
+                // Girişe dön
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
