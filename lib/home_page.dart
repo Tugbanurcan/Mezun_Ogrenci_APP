@@ -8,7 +8,6 @@ import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
 import 'mentor_bul_page.dart';
 
-
 void main() {
   // Uygulamanın Riverpod'u kullanması için zorunlu olan ProviderScope
   runApp(const ProviderScope(child: MyApp()));
@@ -36,18 +35,24 @@ class AnaSayfa extends StatefulWidget {
 class _AnaSayfaState extends State<AnaSayfa> {
   int _selectedIndex = 2; // Ana sayfa varsayılan olarak seçili
   void _onItemTapped(int index) {
-  setState(() {
-    _selectedIndex = index;
-  });
+    setState(() {
+      _selectedIndex = index;
+    });
 
-  if (index == 2) { // Ana Sayfa ikonu
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const AnaSayfa()),
-    );
+    if (index == 2) {
+      // Ana Sayfa
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AnaSayfa()),
+      );
+    } else if (index == 3) {
+      // Mentor Bul
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const MentorBulPage()),
+      );
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
