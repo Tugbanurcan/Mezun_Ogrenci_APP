@@ -210,7 +210,6 @@ class ProfileViewScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 40),
 
                   _buildContentCard(
                     title: "İletişim",
