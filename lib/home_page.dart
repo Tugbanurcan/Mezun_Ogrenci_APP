@@ -6,6 +6,8 @@ import 'notifications.dart';
 import 'bolum_hakkinda.dart';
 import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
+import 'mentor_bul_page.dart';
+
 
 void main() {
   // Uygulamanın Riverpod'u kullanması için zorunlu olan ProviderScope
