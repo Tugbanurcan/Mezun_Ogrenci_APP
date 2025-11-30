@@ -3,6 +3,8 @@ import 'widgets/alt_icon.dart';
 import 'notifications.dart';
 import 'profile_view_screen.dart';
 import 'home_page.dart';
+import 'is_staj_page.dart';
+import 'mentor_bul_page.dart';
 
 class CvHakkindaPage extends StatefulWidget {
   const CvHakkindaPage({super.key});
@@ -135,15 +137,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
                 );
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.account_circle, color: Colors.black87),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
-                );
-              },
-            ),
           ],
         ),
         title: const Text(
@@ -151,20 +144,7 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.black54,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const NotificationPage()),
-              );
-            },
-          ),
-        ],
+        actions: [],
       ),
 
       body: SingleChildScrollView(
@@ -303,32 +283,51 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
             AltIcon(
               ikon: Icons.chat,
               label: 'Chat',
-              isSelected: _selectedIndex == 0,
-              onTap: () => _onItemTapped(0),
+              isSelected: false, // hiçbir ikon mavi olmayacak
+              onTap: () {
+                // Chat sayfan yok, yapılınca buraya yönlendirme eklersin
+              },
             ),
             AltIcon(
               ikon: Icons.event,
               label: 'Etkinlikler',
-              isSelected: _selectedIndex == 1,
-              onTap: () => _onItemTapped(1),
+              isSelected: false,
+              onTap: () {
+                // Etkinlikler sayfan yok, yapılınca ekle
+              },
             ),
             AltIcon(
               ikon: Icons.home,
               label: 'Ana Sayfa',
-              isSelected: _selectedIndex == 2,
-              onTap: () => _onItemTapped(2),
+              isSelected: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
+                );
+              },
             ),
             AltIcon(
               ikon: Icons.person_search,
               label: 'Mentor Bul',
-              isSelected: _selectedIndex == 3,
-              onTap: () => _onItemTapped(3),
+              isSelected: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MentorBulPage()),
+                );
+              },
             ),
             AltIcon(
               ikon: Icons.work_outline,
               label: 'İş & Staj',
-              isSelected: _selectedIndex == 4,
-              onTap: () => _onItemTapped(4),
+              isSelected: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const IsStajPage()),
+                );
+              },
             ),
           ],
         ),
