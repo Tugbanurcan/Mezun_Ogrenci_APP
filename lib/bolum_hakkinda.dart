@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'widgets/alt_icon.dart';
 import 'home_page.dart';
+import 'is_staj_page.dart';
+import 'mentor_bul_page.dart';
 
 class BolumHakkindaPage extends StatefulWidget {
   const BolumHakkindaPage({super.key});
@@ -13,61 +15,70 @@ class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
   int _selectedIndex = 2; // Ana sayfa seçili varsayılan
 
   void _onItemTapped(int index) {
-  setState(() {
-    _selectedIndex = index;
-  });
+    setState(() {
+      _selectedIndex = index;
+    });
 
-  if (index == 2) { // Ana Sayfa ikonu
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const AnaSayfa()),
-    );
+    if (index == 2) {
+      // Ana Sayfa ikonu
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AnaSayfa()),
+      );
+    }
   }
-}
-
 
   final List<Map<String, String>> akademisyenler = [
     {
       "isim": "Doç. Dr. Kemal AKYOL (Bölüm Başkanı)",
-      "alan": "Bilgisayar Bilimleri",
+      "alan": "Makine Öğrenmesi\nGörüntü İşleme\nYapay Zeka",
       "mail": "kakyol@kastamonu.edu.tr",
       "foto": "assets/kemal.webp",
     },
+
     {
       "isim": "Dr. Öğr. Üyesi Ali Burak ÖNCÜL",
-      "alan": "Bilgisayar Bilimleri",
+      "alan": "Yapay Zeka\nMakine Öğrenmesi",
       "mail": "boncul@kastamonu.edu.tr",
       "foto": "assets/aliburak.webp",
     },
     {
       "isim": "Dr. Öğr. Üyesi Ahmet Nusret ÖZALP (Bölüm Başkan Yardımcısı)",
-      "alan": "Bilgisayar Donanımı",
+      "alan":
+          " Bilgi Güvenliği ve Kriptoloji\nBilgisayar ve İletişim Ağları\nSiber Güvenlik",
       "mail": "ali.demir@universite.edu.tr",
       "foto": "assets/nusret.webp",
     },
     {
       "isim": "Doç. Dr. Ekmel ÇETİN",
-      "alan": "Bilgisayar Bilimleri",
+      "alan": "Bilgisayar ve Öğretim Teknolojileri Eğitimi",
       "mail": "ekmel@kastamonu.edu.tr",
       "foto": "assets/ekmel.webp",
     },
     {
       "isim": "Doç. Dr. Salih GÖRGÜNOĞLU",
-      "alan": "Bilgisayar Donanımı",
+      "alan":
+          " Bilgisayar Sistem Yapısı ve Donanımı\nGömülü Sistemler\nBilgisayar Yazılımı",
       "mail": "sgorgunoglu@kastamonu.edu.tr",
       "foto": "assets/salih.webp",
     },
     {
       "isim": "Doç. Dr. Melike KAPLAN YALÇIN (Bölüm Başkan Yardımcısı)",
-      "alan": "Bilgisayar Bilimleri",
+      "alan": "Uygulamalı Matematik",
       "mail": "mkaplan@kastamonu.edu.tr",
       "foto": "assets/melike.webp",
     },
     {
       "isim": "Dr. Öğr. Üyesi Atilla SUNCAK",
-      "alan": "Bilgisayar Teknolojileri",
+      "alan": " Yapay Zeka\nMakine Öğrenmesi\nVeri Madenciliği",
       "mail": "atillasuncak@kastamonu.edu.tr",
       "foto": "assets/atilla.webp",
+    },
+    {
+      "isim": "Arş. Gör. Tunahan GÜDER",
+      "alan": " Yapay Zeka",
+      "mail": "tguder@kastamonu.edu.tr",
+      "foto": "assets/tunahan.webp",
     },
   ];
 
@@ -153,32 +164,51 @@ class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
             AltIcon(
               ikon: Icons.chat,
               label: 'Chat',
-              isSelected: _selectedIndex == 0,
-              onTap: () => _onItemTapped(0),
+              isSelected: false, // hiçbir ikon mavi olmayacak
+              onTap: () {
+                // Chat sayfan yok, yapılınca buraya yönlendirme eklersin
+              },
             ),
             AltIcon(
               ikon: Icons.event,
               label: 'Etkinlikler',
-              isSelected: _selectedIndex == 1,
-              onTap: () => _onItemTapped(1),
+              isSelected: false,
+              onTap: () {
+                // Etkinlikler sayfan yok, yapılınca ekle
+              },
             ),
             AltIcon(
               ikon: Icons.home,
               label: 'Ana Sayfa',
-              isSelected: _selectedIndex == 2,
-              onTap: () => _onItemTapped(2),
+              isSelected: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
+                );
+              },
             ),
             AltIcon(
               ikon: Icons.person_search,
               label: 'Mentor Bul',
-              isSelected: _selectedIndex == 3,
-              onTap: () => _onItemTapped(3),
+              isSelected: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MentorBulPage()),
+                );
+              },
             ),
             AltIcon(
               ikon: Icons.work_outline,
               label: 'İş & Staj',
-              isSelected: _selectedIndex == 4,
-              onTap: () => _onItemTapped(4),
+              isSelected: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const IsStajPage()),
+                );
+              },
             ),
           ],
         ),
