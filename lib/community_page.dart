@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'widgets/alt_icon.dart';
+import 'widgets/bottom_nav_bar.dart';
 import 'home_page.dart';
 import 'profile_view_screen.dart';
 
@@ -10,7 +11,6 @@ class CommunityPage extends StatefulWidget {
   State<CommunityPage> createState() => _CommunityPageState();
 }
 
-
 // altbar fonksiyonu
 class _CommunityPageState extends State<CommunityPage> {
   int _selectedIndex = -1; // Alt bardaki seçili ikon
@@ -19,7 +19,8 @@ class _CommunityPageState extends State<CommunityPage> {
       _selectedIndex = index;
     });
 
-    if (index == 2) { // Ana Sayfa ikonu
+    if (index == 2) {
+      // Ana Sayfa ikonu
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
@@ -48,7 +49,9 @@ class _CommunityPageState extends State<CommunityPage> {
                 // 2. ADIM: Sayfa geçiş kodunu buraya yazıyoruz
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfileViewScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileViewScreen(),
+                  ),
                 );
               },
               child: const CircleAvatar(
@@ -57,7 +60,7 @@ class _CommunityPageState extends State<CommunityPage> {
                 child: Icon(Icons.person, color: Colors.white, size: 20),
               ),
             ),
-          )
+          ),
         ],
       ),
       body: ListView(
@@ -80,54 +83,10 @@ class _CommunityPageState extends State<CommunityPage> {
           ),
         ],
       ),
-        bottomNavigationBar: Container(
-          height: 70,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              AltIcon(
-                ikon: Icons.chat,
-                label: 'Chat',
-                isSelected: _selectedIndex == 0,
-                onTap: () => _onItemTapped(0),
-              ),
-              AltIcon(
-                ikon: Icons.event,
-                label: 'Etkinlikler',
-                isSelected: _selectedIndex == 1,
-                onTap: () => _onItemTapped(1),
-              ),
-              AltIcon(
-                ikon: Icons.home,
-                label: 'Ana Sayfa',
-                isSelected: _selectedIndex == 2,
-                onTap: () => _onItemTapped(2),
-              ),
-              AltIcon(
-                ikon: Icons.person_search,
-                label: 'Mentor Bul',
-                isSelected: _selectedIndex == 3,
-                onTap: () => _onItemTapped(3),
-              ),
-              AltIcon(
-                ikon: Icons.work_outline,
-                label: 'İş & Staj',
-                isSelected: _selectedIndex == 4,
-                onTap: () => _onItemTapped(4),
-              ),
-            ],
-          ),
-        )
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
 }
@@ -137,10 +96,7 @@ class _CommunityPageState extends State<CommunityPage> {
 class CustomButton extends StatelessWidget {
   final String text;
 
-  const CustomButton({
-    required this.text,
-    super.key,
-  });
+  const CustomButton({required this.text, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -190,16 +146,25 @@ class ForumKarti extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.black54),
                 ),
-                child: Text(etiket, style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(
+                  etiket,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(15),
@@ -237,12 +202,11 @@ class ForumKarti extends StatelessWidget {
                   SizedBox(height: 5),
                   CustomButton(text: "Cevapları gör"),
                 ],
-              )
+              ),
             ],
           ),
         ],
       ),
-
     );
   }
 }

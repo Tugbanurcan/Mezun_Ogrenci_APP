@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'widgets/alt_icon.dart';
-import 'notifications.dart';
-import 'profile_view_screen.dart';
 import 'home_page.dart';
+import 'mentor_bul_page.dart';
+import 'is_staj_ekle_page.dart'; // İlan ekleme sayfası
+import 'widgets/bottom_nav_bar.dart'; // Ortak alt menü
+import 'profile_view_screen.dart';
+import 'notifications.dart';
 
 class IsStajPage extends StatefulWidget {
   const IsStajPage({super.key});
@@ -12,24 +14,31 @@ class IsStajPage extends StatefulWidget {
 }
 
 class _IsStajPageState extends State<IsStajPage> {
-  int _selectedIndex = 4;
+  // Bu sayfa İş & Staj sayfası olduğu için indeksi 4
+  final int _currentIndex = 4;
 
   // 🔹 1. FİLTRELEME İÇİN GEREKLİ DEĞİŞKENLER
-  String selectedCategory = "Tümü"; // Hangi buton seçili?
-  String searchText = ""; // Arama kutusunda ne yazıyor?
+  String selectedCategory = "Tümü";
+  String searchText = "";
 
+  // 🔹 NAVİGASYON YÖNLENDİRMELERİ
   void _onItemTapped(int index) {
+    if (index == _currentIndex) return;
+
     if (index == 2) {
-      Navigator.pushAndRemoveUntil(
+      // Ana Sayfa
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AnaSayfa()),
-        (route) => false,
+        MaterialPageRoute(builder: (_) => const AnaSayfa()),
       );
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
+    } else if (index == 3) {
+      // Mentor Bul
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MentorBulPage()),
+      );
     }
+    // Chat(0) ve Etkinlik(1) sayfaları eklendiğinde buraya yazabilirsin.
   }
 
   // Ham Veriler
@@ -40,7 +49,7 @@ class _IsStajPageState extends State<IsStajPage> {
       "color": Colors.blueAccent,
       "title": "Flutter Geliştirici Stajyeri",
       "location": "Kastamonu (Hibrit)",
-      "type": "Zorunlu Staj", // Kategori: Staj
+      "type": "Zorunlu Staj",
       "date": "2 gün önce",
     },
     {
@@ -49,7 +58,7 @@ class _IsStajPageState extends State<IsStajPage> {
       "color": Colors.orange,
       "title": "Junior Backend Developer",
       "location": "İstanbul (Remote)",
-      "type": "Tam Zamanlı", // Kategori: Tam Zamanlı
+      "type": "Tam Zamanlı",
       "date": "1 hafta önce",
     },
     {
@@ -67,7 +76,7 @@ class _IsStajPageState extends State<IsStajPage> {
       "color": Colors.purple,
       "title": "Data Analyst Intern",
       "location": "İstanbul (Maslak)",
-      "type": "Yaz Stajı", // Kategori: Staj
+      "type": "Yaz Stajı",
       "date": "Yeni",
     },
     {
@@ -76,15 +85,15 @@ class _IsStajPageState extends State<IsStajPage> {
       "color": Colors.black,
       "title": "Part-time UI Designer",
       "location": "Remote",
-      "type": "Part-time", // Kategori: Part-time
+      "type": "Part-time",
       "date": "Dün",
     },
   ];
 
-  // 🔹 2. FİLTRELEME MANTIĞI (SİHİRLİ FONKSİYON)
+  // 🔹 2. FİLTRELEME MANTIĞI
   List<Map<String, dynamic>> getFilteredJobs() {
     return allJobPostings.where((job) {
-      // A. Arama Kriteri (Büyük/küçük harf duyarsız)
+      // A. Arama Kriteri
       final searchLower = searchText.toLowerCase();
       final titleMatch = job['title'].toLowerCase().contains(searchLower);
       final companyMatch = job['company'].toLowerCase().contains(searchLower);
@@ -94,25 +103,20 @@ class _IsStajPageState extends State<IsStajPage> {
       bool matchesCategory = true;
       if (selectedCategory != "Tümü") {
         if (selectedCategory == "Staj") {
-          // İçinde "Staj" kelimesi geçen her şeyi kabul et (Yaz Stajı, Zorunlu Staj)
           matchesCategory = job['type'].toString().contains("Staj");
         } else if (selectedCategory == "Remote") {
-          // Konum veya tipte Remote yazıyorsa
           matchesCategory = job['location'].toString().contains("Remote");
         } else {
-          // Tam Zamanlı, Part-time gibi birebir eşleşmeler
           matchesCategory = job['type'] == selectedCategory;
         }
       }
 
-      // Hem arama hem kategori uyuyorsa listeye ekle
       return matchesSearch && matchesCategory;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Filtrelenmiş listeyi alıyoruz
     final displayList = getFilteredJobs();
 
     return Scaffold(
@@ -121,15 +125,18 @@ class _IsStajPageState extends State<IsStajPage> {
       body: Column(
         children: [
           _buildSearchAndFilters(),
-          // Listeyi çizdirirken artık 'displayList' kullanıyoruz
           Expanded(
             child: displayList.isEmpty
-                ? _buildEmptyState() // Eğer sonuç yoksa uyarı göster
+                ? _buildEmptyState()
                 : _buildJobList(displayList),
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavBar(),
+      // ⭐ ORTAK ALT MENÜ
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
 
@@ -157,6 +164,17 @@ class _IsStajPageState extends State<IsStajPage> {
       ),
       centerTitle: true,
       actions: [
+        // 🆕 İLAN EKLEME BUTONU
+        IconButton(
+          icon: const Icon(Icons.add_box_outlined, color: Colors.black87),
+          tooltip: "Yeni İlan Ekle",
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const IsStajEklePage()),
+            );
+          },
+        ),
         IconButton(
           icon: const Icon(
             Icons.notifications_none_rounded,
@@ -179,9 +197,7 @@ class _IsStajPageState extends State<IsStajPage> {
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
       child: Column(
         children: [
-          // Arama Çubuğu
           TextField(
-            // 🔹 3. ARAMA YAPILDIĞINDA TETİKLE
             onChanged: (value) {
               setState(() {
                 searchText = value;
@@ -200,7 +216,6 @@ class _IsStajPageState extends State<IsStajPage> {
             ),
           ),
           const SizedBox(height: 15),
-          // Filtre Butonları
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -218,7 +233,6 @@ class _IsStajPageState extends State<IsStajPage> {
     );
   }
 
-  // 🔹 4. TIKLANINCA KATEGORİ DEĞİŞTİR
   Widget _buildFilterChip(String label) {
     bool isSelected = selectedCategory == label;
 
@@ -350,9 +364,7 @@ class _IsStajPageState extends State<IsStajPage> {
               Icon(Icons.bookmark_border, color: Colors.grey.shade400),
             ],
           ),
-
           const Divider(height: 25, thickness: 0.5),
-
           Row(
             children: [
               _buildJobTag(Icons.location_on_outlined, job['location']),
@@ -360,9 +372,7 @@ class _IsStajPageState extends State<IsStajPage> {
               _buildJobTag(Icons.work_outline, job['type']),
             ],
           ),
-
           const SizedBox(height: 15),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -402,57 +412,6 @@ class _IsStajPageState extends State<IsStajPage> {
         const SizedBox(width: 4),
         Text(text, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
       ],
-    );
-  }
-
-  Widget _buildBottomNavBar() {
-    return Container(
-      height: 70,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          AltIcon(
-            ikon: Icons.chat,
-            label: 'Chat',
-            isSelected: _selectedIndex == 0,
-            onTap: () => _onItemTapped(0),
-          ),
-          AltIcon(
-            ikon: Icons.event,
-            label: 'Etkinlikler',
-            isSelected: _selectedIndex == 1,
-            onTap: () => _onItemTapped(1),
-          ),
-          AltIcon(
-            ikon: Icons.home,
-            label: 'Ana Sayfa',
-            isSelected: _selectedIndex == 2,
-            onTap: () => _onItemTapped(2),
-          ),
-          AltIcon(
-            ikon: Icons.person_search,
-            label: 'Mentor Bul',
-            isSelected: _selectedIndex == 3,
-            onTap: () => _onItemTapped(3),
-          ),
-          AltIcon(
-            ikon: Icons.work_outline,
-            label: 'İş & Staj',
-            isSelected: _selectedIndex == 4,
-            onTap: () => _onItemTapped(4),
-          ),
-        ],
-      ),
     );
   }
 }

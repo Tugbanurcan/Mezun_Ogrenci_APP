@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'widgets/alt_icon.dart';
+import 'widgets/bottom_nav_bar.dart';
 
 void main() => runApp(const MyApp());
 
@@ -128,8 +129,9 @@ class _NotificationPageState extends State<NotificationPage> {
                       notif["title"],
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight:
-                        isRead ? FontWeight.normal : FontWeight.w600,
+                        fontWeight: isRead
+                            ? FontWeight.normal
+                            : FontWeight.w600,
                         color: isRead ? Colors.black54 : Colors.black87,
                         height: 1.4,
                       ),
@@ -141,53 +143,9 @@ class _NotificationPageState extends State<NotificationPage> {
           );
         },
       ),
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
-              isSelected: _selectedIndex == 0,
-              onTap: () => _onItemTapped(0),
-            ),
-            AltIcon(
-              ikon: Icons.notifications,
-              label: 'Bildirimler',
-              isSelected: _selectedIndex == 1,
-              onTap: () => _onItemTapped(1),
-            ),
-            AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
-              isSelected: _selectedIndex == 2,
-              onTap: () => _onItemTapped(2),
-            ),
-            AltIcon(
-              ikon: Icons.person_search,
-              label: 'Mentor Bul',
-              isSelected: _selectedIndex == 3,
-              onTap: () => _onItemTapped(3),
-            ),
-            AltIcon(
-              ikon: Icons.work_outline,
-              label: 'İş & Staj',
-              isSelected: _selectedIndex == 4,
-              onTap: () => _onItemTapped(4),
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

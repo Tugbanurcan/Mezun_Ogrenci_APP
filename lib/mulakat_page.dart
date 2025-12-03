@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'widgets/alt_icon.dart';
+import 'widgets/bottom_nav_bar.dart';
 import 'notifications.dart';
 import 'profile_view_screen.dart';
 import 'home_page.dart';

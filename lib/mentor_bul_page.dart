@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-import 'widgets/alt_icon.dart';
 import 'is_staj_page.dart';
 import 'mentor_profil.dart';
+// Yeni oluşturduğumuz widget'ı import ediyoruz
+import 'widgets/bottom_nav_bar.dart';
 
 class MentorBulPage extends StatefulWidget {
   const MentorBulPage({super.key});
@@ -13,6 +14,29 @@ class MentorBulPage extends StatefulWidget {
 
 class _MentorBulPageState extends State<MentorBulPage> {
   final TextEditingController _searchController = TextEditingController();
+
+  // Mentor Bul sayfası Navigasyonda 3. sırada (0: Chat, 1: Etkinlik, 2: Home, 3: Mentor, 4: İş)
+  final int _currentIndex = 3;
+
+  // Navigasyon Yönlendirmeleri
+  void _onItemTapped(int index) {
+    if (index == _currentIndex) return; // Zaten bu sayfadaysak işlem yapma
+
+    if (index == 2) {
+      // Ana Sayfa
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AnaSayfa()),
+      );
+    } else if (index == 4) {
+      // İş & Staj Sayfası
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
+      );
+    }
+    // Diğer sayfalar (Chat, Etkinlik) eklendiğinde buraya else if ile ekleyebilirsin.
+  }
 
   final List<Map<String, String>> _tumMentorler = [
     {
@@ -69,11 +93,7 @@ class _MentorBulPageState extends State<MentorBulPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 📌 Responsive grid ayarı için gerekebilir (şu an kullanılmıyor ama dursun)
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    // 📌 Arama filtresi
+    // Arama filtresi
     final filtreliListe = _tumMentorler.where((m) {
       final q = _arama.toLowerCase();
       if (q.isEmpty) return true;
@@ -144,9 +164,9 @@ class _MentorBulPageState extends State<MentorBulPage> {
             Expanded(
               child: GridView.builder(
                 itemCount: filtreliListe.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.68, // ⭐ OVERFLOW ÇÖZÜLDÜ
+                  childAspectRatio: 0.68,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                 ),
@@ -159,73 +179,10 @@ class _MentorBulPageState extends State<MentorBulPage> {
         ),
       ),
 
-      // ⭐ ALT BAR
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
-              isSelected: false, // hiçbir ikon mavi olmayacak
-              onTap: () {
-                // Chat sayfan yok, yapılınca buraya yönlendirme eklersin
-              },
-            ),
-            AltIcon(
-              ikon: Icons.event,
-              label: 'Etkinlikler',
-              isSelected: false,
-              onTap: () {
-                // Etkinlikler sayfan yok, yapılınca ekle
-              },
-            ),
-            AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
-                );
-              },
-            ),
-            AltIcon(
-              ikon: Icons.person_search,
-              label: 'Mentor Bul',
-              isSelected: true,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MentorBulPage()),
-                );
-              },
-            ),
-            AltIcon(
-              ikon: Icons.work_outline,
-              label: 'İş & Staj',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const IsStajPage()),
-                );
-              },
-            ),
-          ],
-        ),
+      // ALT BAR (ORTAK WIDGET KULLANIYOR)
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
@@ -297,17 +254,16 @@ class _MentorKart extends StatelessWidget {
                       sirket: mentor['sirket']!,
                       yil: mentor['yil']!,
                       aciklama: mentor['aciklama']!,
-                      fotoUrl: "", // İstersen ekleyebilirsin
+                      fotoUrl: "",
                       linkedin: "",
                       github: "",
-                      hakkinda: mentor['aciklama']!, // şimdilik aynı dursun
-                      yetkinlikler: [], // İstersen doldururuz
+                      hakkinda: mentor['aciklama']!,
+                      yetkinlikler: const [],
                       iletisim: mentor['mail'] ?? "",
                     ),
                   ),
                 );
               },
-
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 shape: RoundedRectangleBorder(
@@ -333,7 +289,7 @@ class _MentorKart extends StatelessWidget {
               ),
               child: const Text(
                 'Mentorluk Talebi Gönder',
-                style: TextStyle(fontSize: 11),
+                style: TextStyle(fontSize: 11, color: Colors.white),
               ),
             ),
           ),

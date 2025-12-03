@@ -4,6 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../providers/user_provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 // Renk sabitleri
 const Color kPrimaryColor = Color(0xFFA65DD4);
@@ -91,7 +93,19 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     super.dispose();
   }
 
-  void _saveChanges() {
+  Future<void> _saveChanges() async {
+    String? photoPath = _currentPhotoPath;
+
+    if (_pickedImage != null) {
+      // Save the image to app directory
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = path.basename(_pickedImage!.path);
+      final savedImage = await _pickedImage!.copy(
+        '${directory.path}/$fileName',
+      );
+      photoPath = savedImage.path;
+    }
+
     ref
         .read(userProfileNotifierProvider.notifier)
         .updateProfile(
@@ -102,6 +116,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           github: _githubController.text,
           education: _educationController.text,
           communication: _communicationController.text,
+          photoPath: photoPath,
         );
 
     Navigator.pop(context);

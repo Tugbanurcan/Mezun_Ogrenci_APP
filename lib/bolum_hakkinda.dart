@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'widgets/alt_icon.dart';
+import 'widgets/bottom_nav_bar.dart';
 import 'home_page.dart';
 import 'is_staj_page.dart';
 import 'mentor_bul_page.dart';
@@ -146,72 +147,9 @@ class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
       ),
 
       // 🔹 Alt Bar (tüm sayfalarla aynı görünüm)
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
-              isSelected: false, // hiçbir ikon mavi olmayacak
-              onTap: () {
-                // Chat sayfan yok, yapılınca buraya yönlendirme eklersin
-              },
-            ),
-            AltIcon(
-              ikon: Icons.event,
-              label: 'Etkinlikler',
-              isSelected: false,
-              onTap: () {
-                // Etkinlikler sayfan yok, yapılınca ekle
-              },
-            ),
-            AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
-                );
-              },
-            ),
-            AltIcon(
-              ikon: Icons.person_search,
-              label: 'Mentor Bul',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MentorBulPage()),
-                );
-              },
-            ),
-            AltIcon(
-              ikon: Icons.work_outline,
-              label: 'İş & Staj',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const IsStajPage()),
-                );
-              },
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
