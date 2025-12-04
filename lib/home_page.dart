@@ -8,6 +8,7 @@ import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
 import 'community_page.dart';
 import 'mentor_bul_page.dart';
+import 'is_staj_page.dart';
 
 void main() {
   // Uygulamanın Riverpod'u kullanması için zorunlu olan ProviderScope
@@ -51,6 +52,13 @@ class _AnaSayfaState extends State<AnaSayfa> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
+      );
+    }
+    else if (index == 4) {
+      // Mentor Bul
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
       );
     }
   }

@@ -120,7 +120,7 @@ class _MentorBulPageState extends State<MentorBulPage> {
                     decoration: InputDecoration(
                       hintText: 'İsim, yetenek veya şirket adına göre ara',
                       contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(18),
                       ),
