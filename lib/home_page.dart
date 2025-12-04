@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-// Yeni widget'ı import ediyoruz
-import 'widgets/bottom_nav_bar.dart';
-
+import 'widgets/alt_icon.dart';
 import 'profile_view_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'notifications.dart';
 import 'bolum_hakkinda.dart';
 import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
 import 'community_page.dart';
 import 'mentor_bul_page.dart';
-
-import 'is_staj_page.dart'; // İş & Staj sayfasına yönlendirme için gerekli olabilir
-
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -38,38 +33,28 @@ class AnaSayfa extends StatefulWidget {
 }
 
 class _AnaSayfaState extends State<AnaSayfa> {
-  int _selectedIndex = 2; // Ana sayfa varsayılan olarak seçili
+  int _selectedIndex = 2;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    // Navigasyon Yönlendirmeleri
     if (index == 2) {
-      // Ana Sayfa (Kendisi) - Yenileme gibi davranır
-      // İstersen burada hiçbir şey yapmayabilirsin.
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AnaSayfa()),
+      );
     } else if (index == 3) {
-      // Mentor Bul Sayfası
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
       );
-    } else if (index == 4) {
-      // İş & Staj Sayfası
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const IsStajPage()),
-      );
     }
-
-    // Chat (0) ve Etkinlikler (1) için henüz sayfa tanımlı değilse boş kalabilir.
-
   }
 
   @override
   Widget build(BuildContext context) {
-    // Profil listesi (Örnek veri)
     final List<Map<String, String>> profiller = [
       {
         'isim': 'Selenay Demirpençe',
@@ -90,23 +75,18 @@ class _AnaSayfaState extends State<AnaSayfa> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         title: const SizedBox(),
         leadingWidth: 60,
         leading: IconButton(
-          icon: const Icon(
-            Icons.account_circle,
-            color: Colors.black87,
-            size: 28,
-          ),
+          icon: const Icon(Icons.account_circle, color: Colors.black87, size: 28),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const ProfileViewScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
             );
           },
         ),
@@ -117,17 +97,13 @@ class _AnaSayfaState extends State<AnaSayfa> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationPage(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const NotificationPage()),
                 );
               },
               child: const CircleAvatar(
                 backgroundColor: Colors.transparent,
-                child: Icon(
-                  Icons.notifications_none_rounded,
-                  color: Colors.black54,
-                ),
+                child: Icon(Icons.notifications_none_rounded,
+                    color: Colors.black54),
               ),
             ),
           ),
@@ -139,7 +115,57 @@ class _AnaSayfaState extends State<AnaSayfa> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔸 Profil kartları
+            // ⭐ MODERN BAŞLIK
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          color: Color(0xFF7AD0B0),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.groups_rounded,
+                          color: Color(0xFF7AD0B0), size: 24),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Mentörlerimiz',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 4,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF7AD0B0),
+                          Color(0xFF47A397),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // 🔸 PROFİL KARTLARI
             SizedBox(
               height: 180,
               child: PageView.builder(
@@ -148,10 +174,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
                 itemBuilder: (context, index) {
                   final profil = profiller[index];
                   return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 10,
-                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -223,6 +246,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
               ),
             ),
 
+            // 🔸 ETKİNLİK KUTUSU
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
@@ -311,8 +335,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
               ),
             ),
 
-            const SizedBox(height: 50),
+            const SizedBox(height: 40),
 
+            // 🔸 KARE BUTONLAR
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -324,9 +349,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const CvHakkindaPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const CvHakkindaPage()),
                       );
                     },
                   ),
@@ -336,9 +359,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const CommunityPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const CommunityPage()),
                       );
                     },
                   ),
@@ -358,9 +379,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const BolumHakkindaPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const BolumHakkindaPage()),
                       );
                     },
                   ),
@@ -371,9 +390,53 @@ class _AnaSayfaState extends State<AnaSayfa> {
         ),
       ),
 
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+      bottomNavigationBar: Container(
+        height: 70,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            AltIcon(
+              ikon: Icons.chat,
+              label: 'Chat',
+              isSelected: _selectedIndex == 0,
+              onTap: () => _onItemTapped(0),
+            ),
+            AltIcon(
+              ikon: Icons.event,
+              label: 'Etkinlikler',
+              isSelected: _selectedIndex == 1,
+              onTap: () => _onItemTapped(1),
+            ),
+            AltIcon(
+              ikon: Icons.home,
+              label: 'Ana Sayfa',
+              isSelected: _selectedIndex == 2,
+              onTap: () => _onItemTapped(2),
+            ),
+            AltIcon(
+              ikon: Icons.person_search,
+              label: 'Mentor Bul',
+              isSelected: _selectedIndex == 3,
+              onTap: () => _onItemTapped(3),
+            ),
+            AltIcon(
+              ikon: Icons.work_outline,
+              label: 'İş & Staj',
+              isSelected: _selectedIndex == 4,
+              onTap: () => _onItemTapped(4),
+            ),
+          ],
+        ),
       ),
     );
   }
