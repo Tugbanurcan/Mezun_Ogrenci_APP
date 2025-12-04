@@ -8,6 +8,7 @@ import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
 import 'community_page.dart';
 import 'mentor_bul_page.dart';
+import 'is_staj_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -50,6 +51,13 @@ class _AnaSayfaState extends State<AnaSayfa> {
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
       );
+      
+      else if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
+      );
+    }
     }
   }
 
