@@ -9,6 +9,7 @@ import 'mulakat_page.dart';
 import 'community_page.dart';
 import 'mentor_bul_page.dart';
 import 'widgets/bottom_nav_bar.dart';
+import 'is_staj_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -50,6 +51,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
+      );
+    } else if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
       );
     }
     // Chat(0) ve Etkinlik(1) sayfaları eklendiğinde buraya yazabilirsin.
