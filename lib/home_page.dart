@@ -51,13 +51,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
       );
-      
-      else if (index == 4) {
+    } else if (index == 4) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const IsStajPage()),
       );
-    }
     }
   }
 
