@@ -5,6 +5,7 @@ import 'profile_view_screen.dart';
 import 'home_page.dart';
 import 'is_staj_page.dart';
 import 'mentor_bul_page.dart';
+import 'widgets/bottom_nav_bar.dart';
 
 class CvHakkindaPage extends StatefulWidget {
   const CvHakkindaPage({super.key});
@@ -14,17 +15,25 @@ class CvHakkindaPage extends StatefulWidget {
 }
 
 class _CvHakkindaPageState extends State<CvHakkindaPage> {
-  int _selectedIndex = 4;
+  int _currentIndex = 2;
 
   void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+    if (index == _currentIndex) return;
 
     if (index == 2) {
+      // Ana Sayfa
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
       );
+    } else if (index == 3) {
+      // Mentor Bul
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MentorBulPage()),
+      );
     }
+    // Chat(0) ve Etkinlik(1) sayfaları eklendiğinde buraya yazabilirsin.
   }
 
   @override
@@ -37,11 +46,9 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'icon': Icons.edit_note,
         'title': "Öz ve net ol",
         'desc':
-
             "Uzun cümlelerden kaçın. CV kısa, anlaşılır ve profesyonel görünmeli.",
         'detail':
             "İş verenler CV’yi ortalama 6–8 saniye inceler. Bu yüzden bilgilerin kısa, net ve direkt olmalıdır. "
-
             "Gereksiz uzun cümleler yerine güçlü yönlerini, başarılarını ve somut sonuçlarını yaz.",
         'isOpen': false,
       },
@@ -50,9 +57,7 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'title': "İmla hatası olmasın",
         'desc': "Küçük yazım hataları bile CV’nin ciddiyetini azaltır.",
         'detail':
-
             "CV’nin profesyonel görünmesi için yazım hatası olmamalıdır. Düzenleme yaptıktan sonra tekrar gözden geçir, "
-
             "mümkünse başka birine okut veya Grammarly gibi araçlar kullan.",
         'isOpen': false,
       },
@@ -61,9 +66,7 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'title': "Bilgiler güncel olmalı",
         'desc': "İletişim ve eğitim bilgilerini güncel tut.",
         'detail':
-
             "Telefon numaran, e-posta adresin, LinkedIn profilin ve portföy linkin mutlaka güncel olmalıdır. "
-
             "Ayrıca eski veya geçerliliğini yitirmiş bilgileri kaldırmalısın.",
         'isOpen': false,
       },
@@ -72,7 +75,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'title': "Ters kronolojik sıra",
         'desc': "En güncel deneyim en üstte.",
         'detail':
-
             "En güncel iş ve eğitim deneyimini ilk sıraya koymalısın. İş veren önce en güncel bilgiyi görmek ister.",
 
         'isOpen': false,
@@ -82,7 +84,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'title': "Düzenli & sade görünüm",
         'desc': "Sade tasarım profesyonellik getirir.",
         'detail':
-
             "Karmaşık fontlar, çok renkli tasarımlar profesyonel görünmez. Modern ve sade bir tasarım tercih edin.",
 
         'isOpen': false,
@@ -92,7 +93,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'title': "Gerçek bilgiler",
         'desc': "Abartma, doğrulanabilir bilgiler ver.",
         'detail':
-
             "İş verenler referans kontrolü yapabilir. Bu yüzden çalışma süreleri ve görevler doğrulanabilir olmalıdır.",
 
         'isOpen': false,
@@ -102,7 +102,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'title': "Pozisyona göre özelleştir",
         'desc': "Aynı CV’yi her yere göndermek hata!",
         'detail':
-
             "Başvurduğun pozisyona göre CV’ni ufak dokunuşlarla özelleştir. İlanda yazan yetenekleri öne çıkar.",
 
         'isOpen': false,
@@ -112,7 +111,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'title': "Gereksiz bilgilerden kaçın",
         'desc': "TC kimlik, medeni hal gibi bilgiler eklenmez.",
         'detail':
-
             "Modern CV’lerde özel hayat bilgileri (doğum tarihi, adres, medeni hal vb.) gereksiz ve kullanılmamaktadır.",
 
         'isOpen': false,
@@ -122,7 +120,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'title': "Fotoğraf gerekli ise ekle",
         'desc': "Profesyonel, sade bir fotoğraf tercih et.",
         'detail':
-
             "Fotoğraf zorunlu değildir. Ekliyorsan profesyonel bir fotoğraf tercih et. Selfie ve filtre kesinlikle olmaz.",
 
         'isOpen': false,
@@ -132,7 +129,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'title': "Başarı odaklı yaz",
         'desc': "Sonuç ve katkılarını açıkla.",
         'detail':
-
             "Görev listesi yazmak yerine elde ettiğin başarıları vurgula. Örneğin: '%30 performans artışı sağladım'.",
 
         'isOpen': false,
@@ -155,8 +151,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
                   context,
                   MaterialPageRoute(builder: (_) => const AnaSayfa()),
                 );
-
-
               },
             ),
           ],
@@ -168,7 +162,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         centerTitle: true,
 
         actions: [],
-
       ),
 
       body: SingleChildScrollView(
@@ -262,7 +255,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
                         duration: const Duration(milliseconds: 300),
                         child: (m['isOpen'] as bool)
                             ? Container(
-
                                 key: ValueKey("detail_$index"),
                                 padding: const EdgeInsets.all(14),
                                 margin: const EdgeInsets.only(top: 8),
@@ -279,7 +271,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
                                   ),
                                 ),
                               )
-
                             : const SizedBox.shrink(),
                       ),
                     ],
@@ -291,72 +282,9 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         ),
       ),
 
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
-              isSelected: false, // hiçbir ikon mavi olmayacak
-              onTap: () {
-                // Chat sayfan yok, yapılınca buraya yönlendirme eklersin
-              },
-            ),
-            AltIcon(
-              ikon: Icons.event,
-              label: 'Etkinlikler',
-              isSelected: false,
-              onTap: () {
-                // Etkinlikler sayfan yok, yapılınca ekle
-              },
-            ),
-            AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
-                );
-              },
-            ),
-            AltIcon(
-              ikon: Icons.person_search,
-              label: 'Mentor Bul',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MentorBulPage()),
-                );
-              },
-            ),
-            AltIcon(
-              ikon: Icons.work_outline,
-              label: 'İş & Staj',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const IsStajPage()),
-                );
-              },
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

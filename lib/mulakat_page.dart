@@ -15,17 +15,25 @@ class MulakatPage extends StatefulWidget {
 }
 
 class _MulakatPageState extends State<MulakatPage> {
-  int _selectedIndex = 3;
+  int _currentIndex = 2;
 
   void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+    if (index == _currentIndex) return;
 
     if (index == 2) {
+      // Ana Sayfa
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
       );
+    } else if (index == 3) {
+      // Mentor Bul
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MentorBulPage()),
+      );
     }
+    // Chat(0) ve Etkinlik(1) sayfaları eklendiğinde buraya yazabilirsin.
   }
 
   @override
@@ -280,72 +288,9 @@ class _MulakatPageState extends State<MulakatPage> {
       ),
 
       // ⭐ ALT BAR
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
-              isSelected: false, // hiçbir ikon mavi olmayacak
-              onTap: () {
-                // Chat sayfan yok, yapılınca buraya yönlendirme eklersin
-              },
-            ),
-            AltIcon(
-              ikon: Icons.event,
-              label: 'Etkinlikler',
-              isSelected: false,
-              onTap: () {
-                // Etkinlikler sayfan yok, yapılınca ekle
-              },
-            ),
-            AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
-                );
-              },
-            ),
-            AltIcon(
-              ikon: Icons.person_search,
-              label: 'Mentor Bul',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MentorBulPage()),
-                );
-              },
-            ),
-            AltIcon(
-              ikon: Icons.work_outline,
-              label: 'İş & Staj',
-              isSelected: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const IsStajPage()),
-                );
-              },
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

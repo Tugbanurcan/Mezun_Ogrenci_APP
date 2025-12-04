@@ -8,6 +8,7 @@ import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
 import 'community_page.dart';
 import 'mentor_bul_page.dart';
+import 'widgets/bottom_nav_bar.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -33,24 +34,25 @@ class AnaSayfa extends StatefulWidget {
 }
 
 class _AnaSayfaState extends State<AnaSayfa> {
-  int _selectedIndex = 2;
+  int _currentIndex = 2;
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == _currentIndex) return;
 
     if (index == 2) {
+      // Ana Sayfa
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
       );
     } else if (index == 3) {
-      Navigator.push(
+      // Mentor Bul
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
       );
     }
+    // Chat(0) ve Etkinlik(1) sayfaları eklendiğinde buraya yazabilirsin.
   }
 
   @override
@@ -81,7 +83,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
         elevation: 0,
         leadingWidth: 60,
         leading: IconButton(
-          icon: const Icon(Icons.account_circle, color: Colors.black87, size: 28),
+          icon: const Icon(
+            Icons.account_circle,
+            color: Colors.black87,
+            size: 28,
+          ),
           onPressed: () {
             Navigator.push(
               context,
@@ -130,8 +136,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.groups_rounded,
-                          color: Color(0xFF7AD0B0), size: 24),
+                      const Icon(
+                        Icons.groups_rounded,
+                        color: Color(0xFF7AD0B0),
+                        size: 24,
+                      ),
                       const SizedBox(width: 6),
                       const Text(
                         'Mentörlerimiz',
@@ -169,7 +178,10 @@ class _AnaSayfaState extends State<AnaSayfa> {
                 itemBuilder: (context, index) {
                   final profil = profiller[index];
                   return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 10,
+                    ),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -222,11 +234,31 @@ class _AnaSayfaState extends State<AnaSayfa> {
                               // ⭐ Yıldızlar
                               const Row(
                                 children: [
-                                  Icon(Icons.star, color: Colors.amber, size: 20),
-                                  Icon(Icons.star_border, color: Colors.grey, size: 20),
-                                  Icon(Icons.star_border, color: Colors.grey, size: 20),
-                                  Icon(Icons.star_border, color: Colors.grey, size: 20),
-                                  Icon(Icons.star_border, color: Colors.grey, size: 20),
+                                  Icon(
+                                    Icons.star,
+                                    color: Colors.amber,
+                                    size: 20,
+                                  ),
+                                  Icon(
+                                    Icons.star_border,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
+                                  Icon(
+                                    Icons.star_border,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
+                                  Icon(
+                                    Icons.star_border,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
+                                  Icon(
+                                    Icons.star_border,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
                                 ],
                               ),
                             ],
@@ -296,7 +328,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const CvHakkindaPage()),
+                          MaterialPageRoute(
+                            builder: (_) => const CvHakkindaPage(),
+                          ),
                         );
                       },
                     ),
@@ -310,7 +344,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const CommunityPage()),
+                          MaterialPageRoute(
+                            builder: (_) => const CommunityPage(),
+                          ),
                         );
                       },
                     ),
@@ -324,7 +360,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const MulakatPage()),
+                          MaterialPageRoute(
+                            builder: (_) => const MulakatPage(),
+                          ),
                         );
                       },
                     ),
@@ -338,7 +376,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const BolumHakkindaPage()),
+                          MaterialPageRoute(
+                            builder: (_) => const BolumHakkindaPage(),
+                          ),
                         );
                       },
                     ),
@@ -351,53 +391,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
       ),
 
       // ALT MENÜ
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
-              isSelected: _selectedIndex == 0,
-              onTap: () => _onclick(0),
-            ),
-            AltIcon(
-              ikon: Icons.event,
-              label: 'Etkinlikler',
-              isSelected: _selectedIndex == 1,
-              onTap: () => _onclick(1),
-            ),
-            AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
-              isSelected: _selectedIndex == 2,
-              onTap: () => _onclick(2),
-            ),
-            AltIcon(
-              ikon: Icons.person_search,
-              label: 'Mentor Bul',
-              isSelected: _selectedIndex == 3,
-              onTap: () => _onclick(3),
-            ),
-            AltIcon(
-              ikon: Icons.work_outline,
-              label: 'İş & Staj',
-              isSelected: _selectedIndex == 4,
-              onTap: () => _onclick(4),
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
@@ -482,13 +478,7 @@ class _KareButon extends StatelessWidget {
                 ),
               ],
             ),
-            child: Center(
-              child: Icon(
-                ikon,
-                size: 34,
-                color: Colors.black87,
-              ),
-            ),
+            child: Center(child: Icon(ikon, size: 34, color: Colors.black87)),
           ),
           const SizedBox(height: 8),
           FittedBox(
