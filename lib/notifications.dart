@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'widgets/alt_icon.dart';
 import 'widgets/bottom_nav_bar.dart';
 
 void main() => runApp(const MyApp());
@@ -19,7 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: bordo),
         appBarTheme: const AppBarTheme(
           backgroundColor: bordo,
-          foregroundColor: Colors.white,
+          foregroundColor: Colors.black,
           centerTitle: true,
         ),
         useMaterial3: true,
@@ -37,46 +36,73 @@ class NotificationPage extends StatefulWidget {
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  int _selectedIndex = 1; // Bildirim sayfası seçili
+  int _selectedIndex = 1;
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-
-    // 🔸 Burada sayfa yönlendirmelerini yapabilirsin
-    // if (index == 2) Navigator.push(context, MaterialPageRoute(builder: (_) => const AnaSayfa()));
   }
 
   List<Map<String, dynamic>> notifications = [
     {
       "icon": "💬",
       "title": "Ahmet size bir mesaj gönderdi",
-      "time": "5 dakika önce",
+      "time": DateTime.now(),
       "isRead": false,
     },
     {
       "icon": "🗓",
-      "title": "Etkinlik duyurusu: Networking Atölyesi\n9 Mayıs, 08:00",
+      "title": "Etkinlik duyurusu: Networking Atölyesi",
+      "time": DateTime.now(),
       "isRead": false,
     },
     {
       "icon": "🎓",
-      "title": "Yeni mentorluk talebi kabul edildi\nDün, 14:30",
+      "title": "Yeni mentorluk talebi kabul edildi",
+      "time": DateTime.now().subtract(const Duration(hours: 23)),
       "isRead": false,
     },
     {
       "icon": "📝",
-      "title": "Turkcell yeni iş ilanı yayınlandı\n10 Mayıs, 09:00",
+      "title": "Turkcell yeni iş ilanı yayınlandı",
+      "time": DateTime.now().subtract(
+        const Duration(hours: 25),
+      ), // otomatik silinsin
       "isRead": false,
     },
   ];
 
+  // 🔥 24 Saatten eski bildirimleri temizle
+  void removeOldNotifications() {
+    setState(() {
+      notifications.removeWhere((notif) {
+        final notifTime = notif["time"] as DateTime;
+        return DateTime.now().difference(notifTime).inHours >= 24;
+      });
+    });
+  }
+
+  // 📌 Tümünü okundu yap
   void markAllAsRead() {
     setState(() {
       for (var n in notifications) {
         n["isRead"] = true;
       }
     });
+  }
+
+  // 📌 Tümünü sil
+  void deleteAllNotifications() {
+    setState(() {
+      notifications.clear();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    removeOldNotifications(); // Sayfa açılınca eski bildirimleri sil
   }
 
   @override
@@ -86,14 +112,26 @@ class _NotificationPageState extends State<NotificationPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Bildirimler"),
+
+        // ✔️ SAĞ ÜSTTE 3 NOKTA MENÜ
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_active_rounded),
-            tooltip: "Tümünü okundu olarak işaretle",
-            onPressed: markAllAsRead,
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.black87),
+            onSelected: (value) {
+              if (value == "read") {
+                markAllAsRead();
+              } else if (value == "delete") {
+                deleteAllNotifications();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: "read", child: Text("Tümünü Oku")),
+              const PopupMenuItem(value: "delete", child: Text("Tümünü Sil")),
+            ],
           ),
         ],
       ),
+
       body: ListView.builder(
         padding: const EdgeInsets.only(bottom: 60),
         itemCount: notifications.length,
@@ -101,48 +139,77 @@ class _NotificationPageState extends State<NotificationPage> {
           final notif = notifications[index];
           final isRead = notif["isRead"] as bool;
 
-          return GestureDetector(
-            onTap: () {
+          return Dismissible(
+            key: UniqueKey(),
+            direction: DismissDirection.startToEnd,
+            background: Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 20),
+              color: Colors.red,
+              child: const Icon(Icons.delete, color: Colors.white, size: 28),
+            ),
+            onDismissed: (direction) {
               setState(() {
-                notif["isRead"] = true;
+                notifications.removeAt(index);
               });
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Bildirim silindi"),
+                  backgroundColor: Colors.red,
+                ),
+              );
             },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: isRead
-                    ? const Color(0xFFFBE9EC)
-                    : const Color(0xFFFADEE3),
-                border: Border.all(color: bordo.withOpacity(0.5), width: 1.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(notif["icon"], style: const TextStyle(fontSize: 28)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      notif["title"],
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: isRead
-                            ? FontWeight.normal
-                            : FontWeight.w600,
-                        color: isRead ? Colors.black54 : Colors.black87,
-                        height: 1.4,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  notif["isRead"] = true;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: notif["isRead"]
+                      ? const Color(0xFFF2F2F2)
+                      : const Color(0xFFE8D5FF),
+                  border: Border.all(color: Colors.white, width: 1.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(notif["icon"], style: const TextStyle(fontSize: 28)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        notif["title"],
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: notif["isRead"]
+                              ? FontWeight.normal
+                              : FontWeight.w600,
+                          color: notif["isRead"]
+                              ? Colors.black54
+                              : Colors.black87,
+                          height: 1.4,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
         },
       ),
+
+      // 👇 Scaffold'un doğru kapanışı ve bottomNavigationBar buraya gelecek
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
