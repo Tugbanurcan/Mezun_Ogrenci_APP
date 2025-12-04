@@ -8,6 +8,7 @@ import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
 import 'community_page.dart';
 import 'mentor_bul_page.dart';
+import 'is_staj_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -50,6 +51,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
       );
+    } else if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
+      );
     }
   }
 
@@ -82,7 +88,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
         title: const SizedBox(),
         leadingWidth: 60,
         leading: IconButton(
-          icon: const Icon(Icons.account_circle, color: Colors.black87, size: 28),
+          icon: const Icon(
+            Icons.account_circle,
+            color: Colors.black87,
+            size: 28,
+          ),
           onPressed: () {
             Navigator.push(
               context,
@@ -102,8 +112,10 @@ class _AnaSayfaState extends State<AnaSayfa> {
               },
               child: const CircleAvatar(
                 backgroundColor: Colors.transparent,
-                child: Icon(Icons.notifications_none_rounded,
-                    color: Colors.black54),
+                child: Icon(
+                  Icons.notifications_none_rounded,
+                  color: Colors.black54,
+                ),
               ),
             ),
           ),
@@ -132,8 +144,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.groups_rounded,
-                          color: Color(0xFF7AD0B0), size: 24),
+                      const Icon(
+                        Icons.groups_rounded,
+                        color: Color(0xFF7AD0B0),
+                        size: 24,
+                      ),
                       const SizedBox(width: 6),
                       const Text(
                         'Mentörlerimiz',
@@ -151,10 +166,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     width: 120,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF7AD0B0),
-                          Color(0xFF47A397),
-                        ],
+                        colors: [Color(0xFF7AD0B0), Color(0xFF47A397)],
                       ),
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -174,7 +186,10 @@ class _AnaSayfaState extends State<AnaSayfa> {
                 itemBuilder: (context, index) {
                   final profil = profiller[index];
                   return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 10,
+                    ),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -349,7 +364,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const CvHakkindaPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const CvHakkindaPage(),
+                        ),
                       );
                     },
                   ),
@@ -359,7 +376,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const CommunityPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const CommunityPage(),
+                        ),
                       );
                     },
                   ),
@@ -379,7 +398,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const BolumHakkindaPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const BolumHakkindaPage(),
+                        ),
                       );
                     },
                   ),
