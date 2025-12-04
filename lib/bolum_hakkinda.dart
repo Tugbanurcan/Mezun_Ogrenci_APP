@@ -59,7 +59,7 @@ class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
     {
       "isim": "Doç. Dr. Salih GÖRGÜNOĞLU",
       "alan":
-          " Bilgisayar Sistem Yapısı ve Donanımı\nGömülü Sistemler\nBilgisayar Yazılımı",
+          "Bilgisayar Sistem Yapısı ve Donanımı\nGömülü Sistemler\nBilgisayar Yazılımı",
       "mail": "sgorgunoglu@kastamonu.edu.tr",
       "foto": "assets/salih.webp",
     },
@@ -71,13 +71,13 @@ class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
     },
     {
       "isim": "Dr. Öğr. Üyesi Atilla SUNCAK",
-      "alan": " Yapay Zeka\nMakine Öğrenmesi\nVeri Madenciliği",
+      "alan": "Yapay Zeka\nMakine Öğrenmesi\nVeri Madenciliği",
       "mail": "atillasuncak@kastamonu.edu.tr",
       "foto": "assets/atilla.webp",
     },
     {
       "isim": "Arş. Gör. Tunahan GÜDER",
-      "alan": " Yapay Zeka",
+      "alan": "Yapay Zeka",
       "mail": "tguder@kastamonu.edu.tr",
       "foto": "assets/tunahan.webp",
     },
@@ -125,12 +125,13 @@ class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
             Expanded(
               child: GridView.builder(
                 itemCount: akademisyenler.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.8,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 250, // bir kartın max genişliği
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.78, // oran sabit, görünüm bozulmaz
                 ),
+
                 itemBuilder: (context, index) {
                   final hoca = akademisyenler[index];
                   return _AkademisyenKart(
