@@ -79,7 +79,6 @@ class _AnaSayfaState extends State<AnaSayfa> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const SizedBox(),
         leadingWidth: 60,
         leading: IconButton(
           icon: const Icon(Icons.account_circle, color: Colors.black87, size: 28),
@@ -100,10 +99,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
                   MaterialPageRoute(builder: (_) => const NotificationPage()),
                 );
               },
-              child: const CircleAvatar(
-                backgroundColor: Colors.transparent,
-                child: Icon(Icons.notifications_none_rounded,
-                    color: Colors.black54),
+              child: const Icon(
+                Icons.notifications_none_rounded,
+                color: Colors.black54,
               ),
             ),
           ),
@@ -115,7 +113,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ⭐ MODERN BAŞLIK
+            // ⭐ BAŞLIK
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
               child: Column(
@@ -127,7 +125,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         width: 6,
                         height: 26,
                         decoration: BoxDecoration(
-                          color: Color(0xFF7AD0B0),
+                          color: const Color(0xFF7AD0B0),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -151,10 +149,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     width: 120,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF7AD0B0),
-                          Color(0xFF47A397),
-                        ],
+                        colors: [Color(0xFF7AD0B0), Color(0xFF47A397)],
                       ),
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -222,6 +217,18 @@ class _AnaSayfaState extends State<AnaSayfa> {
                                   color: Colors.black54,
                                 ),
                               ),
+                              const SizedBox(height: 6),
+
+                              // ⭐ Yıldızlar
+                              const Row(
+                                children: [
+                                  Icon(Icons.star, color: Colors.amber, size: 20),
+                                  Icon(Icons.star_border, color: Colors.grey, size: 20),
+                                  Icon(Icons.star_border, color: Colors.grey, size: 20),
+                                  Icon(Icons.star_border, color: Colors.grey, size: 20),
+                                  Icon(Icons.star_border, color: Colors.grey, size: 20),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -234,6 +241,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
 
             const SizedBox(height: 20),
 
+            // ⭐ ETKİNLİK BAŞLIĞI
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Text(
@@ -246,7 +254,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
               ),
             ),
 
-            // 🔸 ETKİNLİK KUTUSU
+            // Etkinlik kartı
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
@@ -263,125 +271,77 @@ class _AnaSayfaState extends State<AnaSayfa> {
                 ),
                 padding: const EdgeInsets.all(12),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '10 Mart: Atölye – “Sektörlere Giriş”',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          'KATIL',
-                          style: TextStyle(
-                            color: Color(0xFF7AD0B0),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                    _EtkinlikSatiri(),
                     SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '10 Mart: Atölye – “Sektörlere Giriş”',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          'KATIL',
-                          style: TextStyle(
-                            color: Color(0xFF7AD0B0),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                    _EtkinlikSatiri(),
                     SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '15 Mart: CV Hazırlama Atölyesi',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          'KATIL',
-                          style: TextStyle(
-                            color: Color(0xFF7AD0B0),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                    _EtkinlikSatiri(),
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 60),
+            const SizedBox(height: 40),
 
-            // 🔸 KARE BUTONLAR
+            // 🔸 KARE BUTONLAR (Modern, Renkli, Responsive)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _KareButon(
-                    ikon: Icons.work_outline,
-                    label: "CV",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const CvHakkindaPage()),
-                      );
-                    },
+                  Expanded(
+                    child: _KareButon(
+                      ikon: Icons.work_outline,
+                      label: "CV",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CvHakkindaPage()),
+                        );
+                      },
+                    ),
                   ),
-                  _KareButon(
-                    ikon: Icons.description_outlined,
-                    label: "FORUM",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const CommunityPage()),
-                      );
-                    },
+                  const SizedBox(width: 10),
+
+                  Expanded(
+                    child: _KareButon(
+                      ikon: Icons.description_outlined,
+                      label: "FORUM",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CommunityPage()),
+                        );
+                      },
+                    ),
                   ),
-                  _KareButon(
-                    ikon: Icons.people_outline,
-                    label: "MÜLAKAT",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const MulakatPage()),
-                      );
-                    },
+                  const SizedBox(width: 10),
+
+                  Expanded(
+                    child: _KareButon(
+                      ikon: Icons.people_outline,
+                      label: "MÜLAKAT",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const MulakatPage()),
+                        );
+                      },
+                    ),
                   ),
-                  _KareButon(
-                    ikon: Icons.school,
-                    label: "AKADEMİSYENLER",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const BolumHakkindaPage()),
-                      );
-                    },
+                  const SizedBox(width: 10),
+
+                  Expanded(
+                    child: _KareButon(
+                      ikon: Icons.school,
+                      label: "AKADEMİSYENLER",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const BolumHakkindaPage()),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -390,6 +350,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
         ),
       ),
 
+      // ALT MENÜ
       bottomNavigationBar: Container(
         height: 70,
         decoration: BoxDecoration(
@@ -409,39 +370,68 @@ class _AnaSayfaState extends State<AnaSayfa> {
               ikon: Icons.chat,
               label: 'Chat',
               isSelected: _selectedIndex == 0,
-              onTap: () => _onItemTapped(0),
+              onTap: () => _onclick(0),
             ),
             AltIcon(
               ikon: Icons.event,
               label: 'Etkinlikler',
               isSelected: _selectedIndex == 1,
-              onTap: () => _onItemTapped(1),
+              onTap: () => _onclick(1),
             ),
             AltIcon(
               ikon: Icons.home,
               label: 'Ana Sayfa',
               isSelected: _selectedIndex == 2,
-              onTap: () => _onItemTapped(2),
+              onTap: () => _onclick(2),
             ),
             AltIcon(
               ikon: Icons.person_search,
               label: 'Mentor Bul',
               isSelected: _selectedIndex == 3,
-              onTap: () => _onItemTapped(3),
+              onTap: () => _onclick(3),
             ),
             AltIcon(
               ikon: Icons.work_outline,
               label: 'İş & Staj',
               isSelected: _selectedIndex == 4,
-              onTap: () => _onItemTapped(4),
+              onTap: () => _onclick(4),
             ),
           ],
         ),
       ),
     );
   }
+
+  void _onclick(int index) => _onItemTapped(index);
 }
 
+class _EtkinlikSatiri extends StatelessWidget {
+  const _EtkinlikSatiri({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: const [
+        Expanded(
+          child: Text(
+            '10 Mart: Atölye – “Sektörlere Giriş”',
+            style: TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+        ),
+        Text(
+          'KATIL',
+          style: TextStyle(
+            color: Color(0xFF7AD0B0),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// 🔥 MODERN KARE BUTON SINIFI
 class _KareButon extends StatelessWidget {
   final IconData ikon;
   final String label;
@@ -454,6 +444,25 @@ class _KareButon extends StatelessWidget {
     super.key,
   });
 
+  Color _getColor(String label) {
+    switch (label) {
+      case "CV":
+        return const Color(0xFFE3F2FD);
+
+      case "FORUM":
+        return const Color(0xFFFFF3E0);
+
+      case "MÜLAKAT":
+        return const Color(0xFFE8F5E9);
+
+      case "AKADEMİSYENLER":
+        return const Color(0xFFF3E5F5);
+
+      default:
+        return const Color(0xFFE0E0E0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -461,28 +470,37 @@ class _KareButon extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 90,
             height: 90,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              color: _getColor(label),
+              borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 3),
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: Icon(ikon, color: Colors.black26, size: 35),
+            child: Center(
+              child: Icon(
+                ikon,
+                size: 34,
+                color: Colors.black87,
+              ),
+            ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Colors.black87,
+              ),
             ),
           ),
         ],

@@ -5,9 +5,13 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 
 import '../providers/user_provider.dart';
-import 'profie_edit_screen.dart';
+import 'profile_edit_screen.dart';
+import 'is_staj_page.dart';
+import 'community_page.dart';
+import 'is_staj_ekle_page.dart';
+import 'saved_jobs_page.dart';
 
-// Renk Paleti (Sabitler)
+// Renk Paleti
 const Color kPrimaryColor = Color(0xFFA65DD4);
 const Color kSecondaryColor = Color.fromARGB(104, 105, 27, 154);
 const Color kBackgroundColor = Color(0xFFF8F9FA);
@@ -193,11 +197,31 @@ class ProfileViewScreen extends ConsumerWidget {
                   _buildContentCard(
                     title: "Yetkinlikler",
                     icon: Icons.star_border,
-                    action: IconButton(
-                      icon: const Icon(Icons.add_circle, color: kPrimaryColor),
-                      onPressed: () => _showAddSkillDialog(context, ref),
+                    action: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 1. Düzenle Butonu (Kalem)
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: kPrimaryColor),
+                          tooltip: "Düzenle",
+                          onPressed: () => _showManageSkillsDialog(
+                            context,
+                            ref,
+                            userProfile.skills,
+                          ),
+                        ),
+                        // 2. Ekle Butonu (Artı)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.add_circle,
+                            color: kPrimaryColor,
+                          ),
+                          tooltip: "Ekle",
+                          onPressed: () => _showAddSkillDialog(context, ref),
+                        ),
+                      ],
                     ),
-                    content: _buildSkillsWrap(userProfile.skills),
+                    content: _buildSkillsWrap(userProfile.skills, context, ref),
                   ),
                   _buildContentCard(
                     title: "Eğitim",
@@ -222,6 +246,122 @@ class ProfileViewScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
+
+                  _buildContentCard(
+                    title: "Kaydedilenler",
+                    icon: Icons.bookmark_border,
+                    content: const Text(
+                      "Kaydettiğiniz iş ve staj ilanlarını görüntüleyin.",
+                      style: TextStyle(color: Colors.grey, height: 1.4),
+                    ),
+                    action: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_forward,
+                        color: kPrimaryColor,
+                      ),
+                      tooltip: "Kaydedilenlere Git",
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SavedJobsPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  _buildContentCard(
+                    title: "İş & Staj",
+                    icon: Icons.work_outline,
+                    action: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 1. İlan Ekleme Butonu
+                        IconButton(
+                          icon: const Icon(
+                            Icons.add_circle_outline,
+                            color: Colors.black87,
+                          ),
+                          tooltip: "İlan Ekle",
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const IsStajEklePage(),
+                              ),
+                            );
+                          },
+                        ),
+                        // 2. Sayfaya Gitme Butonu
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_forward,
+                            color: kPrimaryColor,
+                          ),
+                          tooltip: "İlanlara Git",
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const IsStajPage(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    content: const Text(
+                      "İş ve staj ilanlarını görüntüleyin veya yeni bir ilan paylaşın.",
+                      style: TextStyle(color: Colors.grey, height: 1.4),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  _buildContentCard(
+                    title: "Forum",
+                    icon: Icons.forum_outlined,
+                    // ACTION KISMI GÜNCELLENDİ 👇
+                    action: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 1. Forum Konusu Ekleme Butonu
+                        IconButton(
+                          icon: const Icon(
+                            Icons.add_circle_outline,
+                            color: Colors.black87,
+                          ),
+                          tooltip: "Konu Başlat",
+                          onPressed: () {
+                            // BURAYA DİKKAT: Forum ekleme sayfana yönlendir
+                            // Navigator.push(context, MaterialPageRoute(builder: (context) => const ForumEklePage()));
+                            print("Forum Ekleme Sayfasına Gidiliyor...");
+                          },
+                        ),
+                        // 2. Sayfaya Gitme Butonu
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_forward,
+                            color: kPrimaryColor,
+                          ),
+                          tooltip: "Foruma Git",
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CommunityPage(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    content: const Text(
+                      "Topluluk forumlarına katılın, sorular sorun veya yeni bir tartışma başlatın.",
+                      style: TextStyle(color: Colors.grey, height: 1.4),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
@@ -283,30 +423,41 @@ class ProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSkillsWrap(List<String> skills) {
+  Widget _buildSkillsWrap(
+    List<String> skills,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
     if (skills.isEmpty) {
       return const Text(
         "Henüz yetkinlik eklenmemiş.",
         style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
       );
     }
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: skills.map((skill) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: kPrimaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: kPrimaryColor.withOpacity(0.3)),
-          ),
-          child: Text(
-            skill,
-            style: const TextStyle(
-              color: kPrimaryColor,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
+        return GestureDetector(
+          onLongPress: () {
+            // Artık parametre olarak gelen 'context'i kullanabilir
+            _showDeleteConfirmDialog(context, ref, skill);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: kPrimaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: kPrimaryColor.withOpacity(0.3)),
+            ),
+            child: Text(
+              skill,
+              style: const TextStyle(
+                color: kPrimaryColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
             ),
           ),
         );
@@ -314,7 +465,6 @@ class ProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  // YENİ: Küçük İkon Tasarımı (İsmin yanına sığması için)
   Widget _buildSmallSocialIcon(
     IconData icon,
     Color color,
@@ -366,7 +516,7 @@ class ProfileViewScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         title: const Text(
           'Yetkinlik Ekle',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -383,7 +533,10 @@ class ProfileViewScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('İptal', style: TextStyle(color: Colors.grey)),
+            child: const Text(
+              'İptal',
+              style: TextStyle(color: Color.fromARGB(209, 0, 0, 0)),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -394,17 +547,206 @@ class ProfileViewScreen extends ConsumerWidget {
               ),
             ),
             onPressed: () {
-              if (controller.text.trim().isNotEmpty) {
-                ref
-                    .read(userProfileNotifierProvider.notifier)
-                    .addSkill(controller.text.trim());
+              final trimmedSkill = controller.text.trim();
+              if (trimmedSkill.isEmpty) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Yetkinlik adı boş olamaz.')),
+                  );
+                }
+                return;
               }
+              final currentSkills = ref
+                  .read(userProfileNotifierProvider)
+                  .skills;
+              if (currentSkills.contains(trimmedSkill)) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Bu yetkinlik zaten mevcut.')),
+                  );
+                }
+                return;
+              }
+              ref
+                  .read(userProfileNotifierProvider.notifier)
+                  .addSkill(trimmedSkill);
               Navigator.pop(context);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Yetkinlik başarıyla eklendi.')),
+                );
+              }
             },
             child: const Text('Ekle'),
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeleteConfirmDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String skillToDelete,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text("Yetkinlik Sil"),
+          content: Text("Yetkinliğini silmek istediğinize emin misiniz?"),
+          actions: [
+            TextButton(
+              child: const Text("İptal"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text("Sil", style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                ref
+                    .read(userProfileNotifierProvider.notifier)
+                    .deleteSkill(skillToDelete);
+
+                Navigator.of(context).pop(); // Pencereyi kapat
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Yetkinlik başarıyla silindi.'),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Yetkinlikleri Yönetme Penceresi
+  void _showManageSkillsDialog(
+    BuildContext context,
+    WidgetRef ref,
+    List<String> currentSkills,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final skills = ref.watch(userProfileNotifierProvider).skills;
+
+            return AlertDialog(
+              title: const Text(
+                "Yetkinlikleri Düzenle",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 300,
+                child: skills.isEmpty
+                    ? const Center(child: Text("Hiç yetkinlik yok."))
+                    : ListView.builder(
+                        itemCount: skills.length,
+                        itemBuilder: (context, index) {
+                          final skill = skills[index];
+                          return ListTile(
+                            title: Text(skill),
+                            // Yan yana Düzenle ve Sil butonları
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // DÜZENLEME BUTONU (Kalem)
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: kPrimaryColor,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(context); // Listeyi kapat
+
+                                    _showEditSingleSkillDialog(context, skill);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Color.fromARGB(255, 0, 0, 0),
+                                  ),
+                                  onPressed: () => _showDeleteConfirmDialog(
+                                    context,
+                                    ref,
+                                    skill,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Kapat"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Tek Bir Yetkinliği Düzenleme Penceresi
+  void _showEditSingleSkillDialog(BuildContext context, String oldSkill) {
+    TextEditingController controller = TextEditingController(text: oldSkill);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            return AlertDialog(
+              title: const Text("Yetkinliği Düzenle"),
+              content: TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  hintText: "Yeni isim giriniz",
+                ),
+                autofocus: true, // Klavye otomatik açılsın
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("İptal"),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    if (controller.text.isNotEmpty) {
+                      ref
+                          .read(userProfileNotifierProvider.notifier)
+                          .updateSkill(oldSkill, controller.text);
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text("Kaydet"),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
