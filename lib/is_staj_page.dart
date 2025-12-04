@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'home_page.dart';
 import 'mentor_bul_page.dart';
 import 'is_staj_ekle_page.dart'; // İlan ekleme sayfası
 import 'widgets/bottom_nav_bar.dart'; // Ortak alt menü
 import 'profile_view_screen.dart';
 import 'notifications.dart';
+import 'providers/saved_jobs_provider.dart';
+import 'saved_jobs_page.dart';
 
-class IsStajPage extends StatefulWidget {
+class IsStajPage extends ConsumerStatefulWidget {
   const IsStajPage({super.key});
 
   @override
-  State<IsStajPage> createState() => _IsStajPageState();
+  ConsumerState<IsStajPage> createState() => _IsStajPageState();
 }
 
-class _IsStajPageState extends State<IsStajPage> {
-  // Bu sayfa İş & Staj sayfası olduğu için indeksi 4
+class _IsStajPageState extends ConsumerState<IsStajPage> {
   final int _currentIndex = 4;
 
   // 🔹 1. FİLTRELEME İÇİN GEREKLİ DEĞİŞKENLER
@@ -145,15 +147,7 @@ class _IsStajPageState extends State<IsStajPage> {
       backgroundColor: Colors.white,
       elevation: 0,
       leadingWidth: 60,
-      leading: IconButton(
-        icon: const Icon(Icons.account_circle, color: Colors.black87, size: 28),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
-          );
-        },
-      ),
+      automaticallyImplyLeading: false,
       title: const Text(
         "İş & Staj İlanları",
         style: TextStyle(
@@ -164,26 +158,25 @@ class _IsStajPageState extends State<IsStajPage> {
       ),
       centerTitle: true,
       actions: [
+        // 🆕 KAYDEDİLEN İŞLER BUTONU
+        IconButton(
+          icon: const Icon(Icons.bookmark_border, color: Colors.black87),
+          tooltip: "Kaydedilen İşler",
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SavedJobsPage()),
+            );
+          },
+        ),
         // 🆕 İLAN EKLEME BUTONU
         IconButton(
-          icon: const Icon(Icons.add_box_outlined, color: Colors.black87),
+          icon: const Icon(Icons.add, color: Colors.black87),
           tooltip: "Yeni İlan Ekle",
           onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const IsStajEklePage()),
-            );
-          },
-        ),
-        IconButton(
-          icon: const Icon(
-            Icons.notifications_none_rounded,
-            color: Colors.black54,
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const NotificationPage()),
             );
           },
         ),
@@ -301,6 +294,14 @@ class _IsStajPageState extends State<IsStajPage> {
   }
 
   Widget _buildJobCard(Map<String, dynamic> job) {
+    final isSaved = ref
+        .watch(savedJobsProvider)
+        .any(
+          (savedJob) =>
+              savedJob['title'] == job['title'] &&
+              savedJob['company'] == job['company'],
+        );
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -361,7 +362,17 @@ class _IsStajPageState extends State<IsStajPage> {
                   ],
                 ),
               ),
-              Icon(Icons.bookmark_border, color: Colors.grey.shade400),
+              IconButton(
+                icon: Icon(
+                  isSaved ? Icons.bookmark : Icons.bookmark_border,
+                  color: isSaved
+                      ? const Color(0xFF7AD0B0)
+                      : Colors.grey.shade400,
+                ),
+                onPressed: () {
+                  ref.read(savedJobsProvider.notifier).toggleSavedJob(job);
+                },
+              ),
             ],
           ),
           const Divider(height: 25, thickness: 0.5),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // Projenin ana renk paleti (Mor)
-const Color kPrimaryColor = Color(0xFFA65DD4);
+const Color kPrimaryColor = Color.fromARGB(192, 0, 0, 0);
 // Arka plan rengi (IsStajPage ile aynı)
 const Color kBackgroundColor = Color(0xFFF9F9F9);
 

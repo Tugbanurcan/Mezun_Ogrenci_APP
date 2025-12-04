@@ -194,7 +194,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
               _buildSectionHeader("İletişim"),
               _buildTextField(
-                'Okul / Bölüm',
+                'İletişim Bilgileri',
                 _communicationController,
                 Icons.mail,
               ),

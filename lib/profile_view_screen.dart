@@ -9,6 +9,7 @@ import 'profile_edit_screen.dart';
 import 'is_staj_page.dart';
 import 'community_page.dart';
 import 'is_staj_ekle_page.dart';
+import 'saved_jobs_page.dart';
 
 // Renk Paleti
 const Color kPrimaryColor = Color(0xFFA65DD4);
@@ -247,6 +248,32 @@ class ProfileViewScreen extends ConsumerWidget {
                   ),
 
                   _buildContentCard(
+                    title: "Kaydedilenler",
+                    icon: Icons.bookmark_border,
+                    content: const Text(
+                      "Kaydettiğiniz iş ve staj ilanlarını görüntüleyin.",
+                      style: TextStyle(color: Colors.grey, height: 1.4),
+                    ),
+                    action: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_forward,
+                        color: kPrimaryColor,
+                      ),
+                      tooltip: "Kaydedilenlere Git",
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SavedJobsPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  _buildContentCard(
                     title: "İş & Staj",
                     icon: Icons.work_outline,
                     action: Row(
@@ -290,6 +317,8 @@ class ProfileViewScreen extends ConsumerWidget {
                     ),
                   ),
 
+                  const SizedBox(height: 20),
+
                   _buildContentCard(
                     title: "Forum",
                     icon: Icons.forum_outlined,
@@ -331,6 +360,8 @@ class ProfileViewScreen extends ConsumerWidget {
                       style: TextStyle(color: Colors.grey, height: 1.4),
                     ),
                   ),
+
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
