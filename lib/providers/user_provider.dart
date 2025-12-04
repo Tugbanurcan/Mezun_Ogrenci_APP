@@ -44,6 +44,26 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
   void addSkill(String skill) {
     state = state.copyWith(skills: [...state.skills, skill]);
   }
+
+  // Bu kodu UserProfileNotifier sınıfının içine (diğer fonksiyonların yanına) yapıştır
+  void deleteSkill(String skillToDelete) {
+    final updatedSkills = List<String>.from(state.skills);
+
+    updatedSkills.remove(skillToDelete);
+
+    state = state.copyWith(skills: updatedSkills);
+  }
+
+  void updateSkill(String oldSkill, String newSkill) {
+    final updatedSkills = List<String>.from(state.skills);
+
+    final index = updatedSkills.indexOf(oldSkill);
+
+    if (index != -1) {
+      updatedSkills[index] = newSkill;
+      state = state.copyWith(skills: updatedSkills);
+    }
+  }
 }
 
 // 2. Provider Tanımı

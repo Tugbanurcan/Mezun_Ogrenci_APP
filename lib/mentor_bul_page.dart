@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart'; // 🔹 Alt bara geri dönebilmek için
+import 'home_page.dart';
+import 'is_staj_page.dart';
+import 'mentor_profil.dart';
+// Yeni oluşturduğumuz widget'ı import ediyoruz
+import 'widgets/bottom_nav_bar.dart';
 
 class MentorBulPage extends StatefulWidget {
   const MentorBulPage({super.key});
@@ -11,7 +15,28 @@ class MentorBulPage extends StatefulWidget {
 class _MentorBulPageState extends State<MentorBulPage> {
   final TextEditingController _searchController = TextEditingController();
 
-  int _selectedIndex = 3; // 🔹 Mentor Bul varsayılan seçili
+  // Mentor Bul sayfası Navigasyonda 3. sırada (0: Chat, 1: Etkinlik, 2: Home, 3: Mentor, 4: İş)
+  final int _currentIndex = 3;
+
+  // Navigasyon Yönlendirmeleri
+  void _onItemTapped(int index) {
+    if (index == _currentIndex) return; // Zaten bu sayfadaysak işlem yapma
+
+    if (index == 2) {
+      // Ana Sayfa
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AnaSayfa()),
+      );
+    } else if (index == 4) {
+      // İş & Staj Sayfası
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
+      );
+    }
+    // Diğer sayfalar (Chat, Etkinlik) eklendiğinde buraya else if ile ekleyebilirsin.
+  }
 
   final List<Map<String, String>> _tumMentorler = [
     {
@@ -19,68 +44,56 @@ class _MentorBulPageState extends State<MentorBulPage> {
       'unvan': 'Backend Developer',
       'sirket': 'TrendTech',
       'yil': '2020',
-      'aciklama': 'Java • Spring • Microservices'
+      'aciklama': 'Java • Spring • Microservices',
+      'mail': 'selenay@trendtech.com',
     },
     {
       'isim': 'Ahmet Yılmaz',
       'unvan': 'iOS Developer',
       'sirket': 'MobilityX',
       'yil': '2019',
-      'aciklama': 'Swift • UIKit • Firebase'
+      'aciklama': 'Swift • UIKit • Firebase',
+      'mail': 'ahmet@trendtech.com',
     },
     {
       'isim': 'Elif Kaya',
       'unvan': 'Data Scientist',
       'sirket': 'InsightLab',
       'yil': '2018',
-      'aciklama': 'Python • NLP • Deep Learning'
+      'aciklama': 'Python • NLP • Deep Learning',
+      'mail': 'elif@trendtech.com',
     },
     {
       'isim': 'Mehmet Demir',
       'unvan': 'Frontend Developer',
       'sirket': 'PixelSoft',
       'yil': '2021',
-      'aciklama': 'React • TypeScript • UI/UX'
+      'aciklama': 'React • TypeScript • UI/UX',
+      'mail': 'mehmet@trendtech.com',
     },
     {
       'isim': 'Zeynep Öz',
       'unvan': 'Cloud Engineer',
       'sirket': 'Cloudify',
       'yil': '2017',
-      'aciklama': 'AWS • DevOps • Docker'
+      'aciklama': 'AWS • DevOps • Docker',
+      'mail': 'zeynep@trendtech.com',
     },
     {
       'isim': 'Kerem Çelik',
       'unvan': 'Product Manager',
       'sirket': 'NextMove',
       'yil': '2016',
-      'aciklama': 'Roadmap • UX • Agile'
+      'aciklama': 'Roadmap • UX • Agile',
+      'mail': 'kerem@trendtech.com',
     },
   ];
 
   String _arama = '';
 
-  // 🔹 Alt bardaki butonlara basınca yönlendirme
-  void _onItemTapped(int index) {
-    if (index == _selectedIndex) return;
-
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AnaSayfa()),
-      );
-    } else if (index == 3) {
-      // Bu sayfa zaten Mentor Bul, refresh gerekmez
-    }
-    // diğer sayfalar (chat, etkinlik vb.) eklenebilir
-  }
-
   @override
   Widget build(BuildContext context) {
+    // Arama filtresi
     final filtreliListe = _tumMentorler.where((m) {
       final q = _arama.toLowerCase();
       if (q.isEmpty) return true;
@@ -92,6 +105,8 @@ class _MentorBulPageState extends State<MentorBulPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+
+      // 🔹 ÜST BAR
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
@@ -106,6 +121,7 @@ class _MentorBulPageState extends State<MentorBulPage> {
         centerTitle: true,
       ),
 
+      // 🔹 ANA İÇERİK
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
@@ -119,8 +135,10 @@ class _MentorBulPageState extends State<MentorBulPage> {
                     onChanged: (v) => setState(() => _arama = v),
                     decoration: InputDecoration(
                       hintText: 'İsim, yetenek veya şirket adına göre ara',
-                      contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(18),
                       ),
@@ -142,13 +160,13 @@ class _MentorBulPageState extends State<MentorBulPage> {
 
             const SizedBox(height: 16),
 
-            // 🔹 Mentor kartları grid
+            // 🔹 GRID
             Expanded(
               child: GridView.builder(
                 itemCount: filtreliListe.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.78,
+                  childAspectRatio: 0.68,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                 ),
@@ -156,65 +174,21 @@ class _MentorBulPageState extends State<MentorBulPage> {
                   return _MentorKart(mentor: filtreliListe[index]);
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
 
-      // 🔥 ALT BAR EKLENDİ
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
-              isSelected: _selectedIndex == 0,
-              onTap: () => _onItemTapped(0),
-            ),
-            _AltIcon(
-              ikon: Icons.event,
-              label: 'Etkinlikler',
-              isSelected: _selectedIndex == 1,
-              onTap: () => _onItemTapped(1),
-            ),
-            _AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
-              isSelected: _selectedIndex == 2,
-              onTap: () => _onItemTapped(2),
-            ),
-            _AltIcon(
-              ikon: Icons.person_search,
-              label: 'Mentor Bul',
-              isSelected: _selectedIndex == 3,
-              onTap: () => _onItemTapped(3),
-            ),
-            _AltIcon(
-              ikon: Icons.work_outline,
-              label: 'İş & Staj',
-              isSelected: _selectedIndex == 4,
-              onTap: () => _onItemTapped(4),
-            ),
-          ],
-        ),
+      // ALT BAR (ORTAK WIDGET KULLANIYOR)
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
 }
 
-// -------------------- KART BİLEŞENİ --------------------
+// -------------------- MENTOR KARTI --------------------
 
 class _MentorKart extends StatelessWidget {
   final Map<String, String> mentor;
@@ -267,11 +241,29 @@ class _MentorKart extends StatelessWidget {
 
           const Spacer(),
 
-          // 🔹 Profili Gör
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MentorProfilPage(
+                      isim: mentor['isim']!,
+                      unvan: mentor['unvan']!,
+                      sirket: mentor['sirket']!,
+                      yil: mentor['yil']!,
+                      aciklama: mentor['aciklama']!,
+                      fotoUrl: "",
+                      linkedin: "",
+                      github: "",
+                      hakkinda: mentor['aciklama']!,
+                      yetkinlikler: const [],
+                      iletisim: mentor['mail'] ?? "",
+                    ),
+                  ),
+                );
+              },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 shape: RoundedRectangleBorder(
@@ -284,7 +276,6 @@ class _MentorKart extends StatelessWidget {
 
           const SizedBox(height: 6),
 
-          // 🔹 Mentorluk Gönder
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -296,48 +287,12 @@ class _MentorKart extends StatelessWidget {
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-              child: const Text('Mentorluk Talebi Gönder', style: TextStyle(fontSize: 11)),
+              child: const Text(
+                'Mentorluk Talebi Gönder',
+                style: TextStyle(fontSize: 11, color: Colors.white),
+              ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// -------------------- ALT ICON --------------------
-
-class _AltIcon extends StatelessWidget {
-  final IconData ikon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _AltIcon({
-    required this.ikon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            ikon,
-            color: isSelected ? Colors.black : Colors.black38,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: isSelected ? Colors.black : Colors.black38,
-            ),
-          )
         ],
       ),
     );

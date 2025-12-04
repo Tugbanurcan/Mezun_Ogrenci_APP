@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'widgets/alt_icon.dart';
-import 'profile_view_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// Yeni widget'ı import ediyoruz
+import 'widgets/bottom_nav_bar.dart';
+
+import 'profile_view_screen.dart';
 import 'notifications.dart';
 import 'bolum_hakkinda.dart';
 import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
 import 'community_page.dart';
 import 'mentor_bul_page.dart';
-import 'is_staj_page.dart';
+
+import 'is_staj_page.dart'; // İş & Staj sayfasına yönlendirme için gerekli olabilir
+
 
 void main() {
-  // Uygulamanın Riverpod'u kullanması için zorunlu olan ProviderScope
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -36,35 +39,37 @@ class AnaSayfa extends StatefulWidget {
 
 class _AnaSayfaState extends State<AnaSayfa> {
   int _selectedIndex = 2; // Ana sayfa varsayılan olarak seçili
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
+    // Navigasyon Yönlendirmeleri
     if (index == 2) {
-      // Ana Sayfa
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AnaSayfa()),
-      );
+      // Ana Sayfa (Kendisi) - Yenileme gibi davranır
+      // İstersen burada hiçbir şey yapmayabilirsin.
     } else if (index == 3) {
-      // Mentor Bul
+      // Mentor Bul Sayfası
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
       );
-    }
-    else if (index == 4) {
-      // Mentor Bul
+    } else if (index == 4) {
+      // İş & Staj Sayfası
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const IsStajPage()),
       );
     }
+
+    // Chat (0) ve Etkinlikler (1) için henüz sayfa tanımlı değilse boş kalabilir.
+
   }
 
   @override
   Widget build(BuildContext context) {
+    // Profil listesi (Örnek veri)
     final List<Map<String, String>> profiller = [
       {
         'isim': 'Selenay Demirpençe',
@@ -280,7 +285,6 @@ class _AnaSayfaState extends State<AnaSayfa> {
                       ],
                     ),
                     SizedBox(height: 8),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -326,14 +330,15 @@ class _AnaSayfaState extends State<AnaSayfa> {
                       );
                     },
                   ),
-
-                   _KareButon(
+                  _KareButon(
                     ikon: Icons.description_outlined,
                     label: "formlar",
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const CommunityPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const CommunityPage(),
+                        ),
                       );
                     },
                   ),
@@ -347,7 +352,6 @@ class _AnaSayfaState extends State<AnaSayfa> {
                       );
                     },
                   ),
-
                   _KareButon(
                     ikon: Icons.school,
                     label: "AKADEMİSYENLER",
@@ -367,53 +371,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
         ),
       ),
 
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
-              isSelected: _selectedIndex == 0,
-              onTap: () => _onItemTapped(0),
-            ),
-            AltIcon(
-              ikon: Icons.event,
-              label: 'Etkinlikler',
-              isSelected: _selectedIndex == 1,
-              onTap: () => _onItemTapped(1),
-            ),
-            AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
-              isSelected: _selectedIndex == 2,
-              onTap: () => _onItemTapped(2),
-            ),
-            AltIcon(
-              ikon: Icons.person_search,
-              label: 'Mentor Bul',
-              isSelected: _selectedIndex == 3,
-              onTap: () => _onItemTapped(3),
-            ),
-            AltIcon(
-              ikon: Icons.work_outline,
-              label: 'İş & Staj',
-              isSelected: _selectedIndex == 4,
-              onTap: () => _onItemTapped(4),
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
@@ -422,19 +382,19 @@ class _AnaSayfaState extends State<AnaSayfa> {
 class _KareButon extends StatelessWidget {
   final IconData ikon;
   final String label;
-  final VoidCallback? onTap; // 🔹 eklendi
+  final VoidCallback? onTap;
 
   const _KareButon({
     required this.ikon,
     required this.label,
-    this.onTap, // 🔹 eklendi
+    this.onTap,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap, // 🔹 tıklama eklendi
+      onTap: onTap,
       child: Column(
         children: [
           Container(

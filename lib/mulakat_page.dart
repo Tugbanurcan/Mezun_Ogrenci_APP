@@ -1,351 +1,299 @@
 import 'package:flutter/material.dart';
-import 'widgets/alt_icon.dart';
-import 'notifications.dart';
-import 'profile_view_screen.dart';
 import 'home_page.dart';
+import 'is_staj_page.dart';
+import 'mentor_profil.dart';
+// Yeni oluşturduğumuz widget'ı import ediyoruz
+import 'widgets/bottom_nav_bar.dart';
 
-class MulakatPage extends StatefulWidget {
-  const MulakatPage({super.key});
+class MentorBulPage extends StatefulWidget {
+  const MentorBulPage({super.key});
 
   @override
-  State<MulakatPage> createState() => _MulakatPageState();
+  State<MentorBulPage> createState() => _MentorBulPageState();
 }
 
-class _MulakatPageState extends State<MulakatPage> {
-  int _selectedIndex = 3;
+class _MentorBulPageState extends State<MentorBulPage> {
+  final TextEditingController _searchController = TextEditingController();
 
+  // Mentor Bul sayfası Navigasyonda 3. sırada (0: Chat, 1: Etkinlik, 2: Home, 3: Mentor, 4: İş)
+  final int _currentIndex = 3;
+
+  // Navigasyon Yönlendirmeleri
   void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+    if (index == _currentIndex) return; // Zaten bu sayfadaysak işlem yapma
 
     if (index == 2) {
+      // Ana Sayfa
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
       );
+    } else if (index == 4) {
+      // İş & Staj Sayfası
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
+      );
     }
+    // Diğer sayfalar (Chat, Etkinlik) eklendiğinde buraya else if ile ekleyebilirsin.
   }
+
+  final List<Map<String, String>> _tumMentorler = [
+    {
+      'isim': 'Selenay Demirpençe',
+      'unvan': 'Backend Developer',
+      'sirket': 'TrendTech',
+      'yil': '2020',
+      'aciklama': 'Java • Spring • Microservices',
+      'mail': 'selenay@trendtech.com',
+    },
+    {
+      'isim': 'Ahmet Yılmaz',
+      'unvan': 'iOS Developer',
+      'sirket': 'MobilityX',
+      'yil': '2019',
+      'aciklama': 'Swift • UIKit • Firebase',
+      'mail': 'ahmet@trendtech.com',
+    },
+    {
+      'isim': 'Elif Kaya',
+      'unvan': 'Data Scientist',
+      'sirket': 'InsightLab',
+      'yil': '2018',
+      'aciklama': 'Python • NLP • Deep Learning',
+      'mail': 'elif@trendtech.com',
+    },
+    {
+      'isim': 'Mehmet Demir',
+      'unvan': 'Frontend Developer',
+      'sirket': 'PixelSoft',
+      'yil': '2021',
+      'aciklama': 'React • TypeScript • UI/UX',
+      'mail': 'mehmet@trendtech.com',
+    },
+    {
+      'isim': 'Zeynep Öz',
+      'unvan': 'Cloud Engineer',
+      'sirket': 'Cloudify',
+      'yil': '2017',
+      'aciklama': 'AWS • DevOps • Docker',
+      'mail': 'zeynep@trendtech.com',
+    },
+    {
+      'isim': 'Kerem Çelik',
+      'unvan': 'Product Manager',
+      'sirket': 'NextMove',
+      'yil': '2016',
+      'aciklama': 'Roadmap • UX • Agile',
+      'mail': 'kerem@trendtech.com',
+    },
+  ];
+
+  String _arama = '';
 
   @override
   Widget build(BuildContext context) {
-    const anaRenk = Color(0xFF7AD0B0);
+    // Arama filtresi
+    final filtreliListe = _tumMentorler.where((m) {
+      final q = _arama.toLowerCase();
+      if (q.isEmpty) return true;
 
-    final maddeler = [
-      {
-        'icon': Icons.lightbulb_outline,
-        'title': "Hazırlıklı Git",
-        'desc': "Şirketi ve pozisyonu önceden mutlaka araştır.",
-        'detail':
-        "Şirketin vizyonu, kültürü, projeleri, ekip yapısı ve pozisyonun sorumlulukları hakkında bilgi edinmek "
-            "karşındaki kişiye ciddi bir aday olduğun mesajını verir. "
-            "Google News, LinkedIn, şirket web sitesi ve Glassdoor iyi kaynaklardır.",
-        'isOpen': false,
-      },
-      {
-        'icon': Icons.access_time,
-        'title': "Zamanında Git",
-        'desc': "Mülakata 10 dakika önce gitmelisin.",
-        'detail':
-        "En kötü izlenimlerden biri geç kalmaktır. Online mülakatlarda bağlantı, kamera ve mikrofonu "
-            "en az 10 dakika önce test etmelisin. Bağlantı problemleri ilk izlenimi olumsuz etkiler.",
-        'isOpen': false,
-      },
-      {
-        'icon': Icons.checkroom,
-        'title': "Uygun Giyin",
-        'desc': "Sade ve profesyonel bir görünüm tercih edilmelidir.",
-        'detail':
-        "Mülakat bir değerlendirme alanıdır. Kıyafetin profesyonel, temiz ve düzenli olmalıdır. "
-            "Şirket kültürüne göre çok resmi veya çok günlük giyimden kaçın.",
-        'isOpen': false,
-      },
-      {
-        'icon': Icons.record_voice_over,
-        'title': "Beden Dilini Doğru Kullan",
-        'desc': "Göz teması, dik duruş ve kontrollü el hareketleri önemli.",
-        'detail':
-        "İletişimin %60’tan fazlası beden diliyle olur. Göz teması kurmak, dik oturmak, "
-            "gereksiz el hareketlerinden kaçınmak profesyonellik izlenimi verir.",
-        'isOpen': false,
-      },
-      {
-        'icon': Icons.person_pin,
-        'title': "Kendini Etkili Tanıt",
-        'desc': "1 dakikalık güçlü bir açılış yap.",
-        'detail':
-        "Mülakatın başında kendini tanıtırken eğitim, deneyim ve güçlü yanlarını kısa ve net bir şekilde sunmalısın. "
-            "Bu bölümü önceden prova etmen faydalı olur.",
-        'isOpen': false,
-      },
-      {
-        'icon': Icons.question_answer,
-        'title': "Sorulara Net Yanıt Ver",
-        'desc': "Bilmiyorsan dürüst ol, özgüvenli konuş.",
-        'detail':
-        "Bilmediğin bir soru gelirse panik yapma. 'Bu konuda tecrübem yok ama öğrenmeye açığım' gibi profesyonel "
-            "cevaplar olumlu etki bırakır.",
-        'isOpen': false,
-      },
-      {
-        'icon': Icons.group_work,
-        'title': "Somut Örnekler Ver",
-        'desc': "Yeteneklerini örneklerle destekle.",
-        'detail':
-        "Takım çalışması, problem çözme, iletişim gibi soyut beceriler somut örneklerle desteklenmelidir. "
-            "Mesela '4 kişilik ekiple X projesini tamamladık' gibi.",
-        'isOpen': false,
-      },
-      {
-        'icon': Icons.remove_red_eye_outlined,
-        'title': "Gereksiz Detaylardan Kaçın",
-        'desc': "Konuyu dağıtma, öz bir şekilde konuş.",
-        'detail':
-        "Gereksiz ayrıntılara girmek, çok uzun konuşmak veya konu dışına çıkmak profesyonel görünmez. "
-            "Her cevabın net ve odaklı olmalı.",
-        'isOpen': false,
-      },
-      {
-        'icon': Icons.help_center,
-        'title': "Sen de Soru Sor",
-        'desc': "Pozisyona ilgi duyduğunu göster.",
-        'detail':
-        "Mülakatta soru sormak çok olumlu etki yaratır. Örneğin: 'Bu pozisyonda başarı nasıl ölçülüyor?' "
-            "veya 'Ekip büyüklüğü nedir?' gibi.",
-        'isOpen': false,
-      },
-      {
-        'icon': Icons.mail_outline,
-        'title': "Teşekkür Et ve Takipte Kal",
-        'desc': "Görüşme sonrası e-posta büyük fark yaratır.",
-        'detail':
-        "Mülakat bittikten sonra kısa bir teşekkür maili göndermek profesyonellik göstergesidir. "
-            "Adayların %80’i yapmadığı için seni öne geçirir.",
-        'isOpen': false,
-      },
-    ];
+      return m['isim']!.toLowerCase().contains(q) ||
+          m['unvan']!.toLowerCase().contains(q) ||
+          m['sirket']!.toLowerCase().contains(q);
+    }).toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // ⭐ APPBAR
+      // 🔹 ÜST BAR
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
-        leadingWidth: 110,
-        leading: Row(
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Mentor Bul',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
+      ),
+
+      // 🔹 ANA İÇERİK
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
           children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black87),
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
-                );
-              },
+            // 🔍 Arama kutusu
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (v) => setState(() => _arama = v),
+                    decoration: InputDecoration(
+                      hintText: 'İsim, yetenek veya şirket adına göre ara',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.black26),
+                  ),
+                  child: const Icon(Icons.filter_list),
+                ),
+              ],
             ),
-            IconButton(
-              icon: const Icon(Icons.account_circle, color: Colors.black87),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
-                );
-              },
+
+            const SizedBox(height: 16),
+
+            // 🔹 GRID
+            Expanded(
+              child: GridView.builder(
+                itemCount: filtreliListe.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.68,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                itemBuilder: (context, index) {
+                  return _MentorKart(mentor: filtreliListe[index]);
+                },
+              ),
             ),
           ],
         ),
-        centerTitle: true,
-        title: const Text(
-          "Mülakat Rehberi",
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.black54,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const NotificationPage()),
-              );
-            },
+      ),
+
+      // ALT BAR (ORTAK WIDGET KULLANIYOR)
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
+      ),
+    );
+  }
+}
+
+// -------------------- MENTOR KARTI --------------------
+
+class _MentorKart extends StatelessWidget {
+  final Map<String, String> mentor;
+
+  const _MentorKart({required this.mentor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 5,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 32,
+            backgroundColor: Colors.grey.shade300,
+            child: const Icon(Icons.person, size: 40, color: Colors.white),
+          ),
+          const SizedBox(height: 10),
 
-      // ⭐ BODY (Kartlar)
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          children: maddeler.asMap().entries.map((entry) {
-            int index = entry.key;
-            var m = entry.value;
+          Text(
+            mentor['isim']!,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            textAlign: TextAlign.center,
+          ),
 
-            return StatefulBuilder(
-              builder: (context, setStateCard) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 14),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.07),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ÜST BÖLÜM
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: anaRenk.withOpacity(.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              m['icon'] as IconData,
-                              color: anaRenk,
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  m['title'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  m['desc'] as String,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey.shade700,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+          const SizedBox(height: 4),
+          Text(
+            '${mentor['yil']} - ${mentor['unvan']} @ ${mentor['sirket']}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, color: Colors.black54),
+          ),
 
-                      const SizedBox(height: 12),
+          const SizedBox(height: 4),
+          Text(
+            mentor['aciklama']!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, color: Colors.black54),
+          ),
 
-                      // DETAY BUTONU
-                      TextButton(
-                        onPressed: () {
-                          setStateCard(() {
-                            m['isOpen'] = !(m['isOpen'] as bool);
-                          });
-                        },
-                        child: Text(
-                          m['isOpen'] as bool ? "Kapat" : "Detay",
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
+          const Spacer(),
 
-                      // AÇILAN / KAPANAN DETAY KUTUSU
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: (m['isOpen'] as bool)
-                            ? Container(
-                          key: ValueKey("detail_$index"),
-                          padding: const EdgeInsets.all(14),
-                          margin: const EdgeInsets.only(top: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            m['detail'] as String,
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              color: Colors.grey.shade800,
-                              height: 1.5,
-                            ),
-                          ),
-                        )
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MentorProfilPage(
+                      isim: mentor['isim']!,
+                      unvan: mentor['unvan']!,
+                      sirket: mentor['sirket']!,
+                      yil: mentor['yil']!,
+                      aciklama: mentor['aciklama']!,
+                      fotoUrl: "",
+                      linkedin: "",
+                      github: "",
+                      hakkinda: mentor['aciklama']!,
+                      yetkinlikler: const [],
+                      iletisim: mentor['mail'] ?? "",
+                    ),
                   ),
                 );
               },
-            );
-          }).toList(),
-        ),
-      ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: const Text('Profili Gör', style: TextStyle(fontSize: 11)),
+            ),
+          ),
 
-      // ⭐ ALT BAR
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+          const SizedBox(height: 6),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black87,
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: const Text(
+                'Mentorluk Talebi Gönder',
+                style: TextStyle(fontSize: 11, color: Colors.white),
+              ),
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            AltIcon(
-              ikon: Icons.chat,
-              label: 'Chat',
-              isSelected: _selectedIndex == 0,
-              onTap: () => _onItemTapped(0),
-            ),
-            AltIcon(
-              ikon: Icons.event,
-              label: 'Etkinlikler',
-              isSelected: _selectedIndex == 1,
-              onTap: () => _onItemTapped(1),
-            ),
-            AltIcon(
-              ikon: Icons.home,
-              label: 'Ana Sayfa',
-              isSelected: _selectedIndex == 2,
-              onTap: () => _onItemTapped(2),
-            ),
-            AltIcon(
-              ikon: Icons.person_search,
-              label: 'Mentor Bul',
-              isSelected: _selectedIndex == 3,
-              onTap: () => _onItemTapped(3),
-            ),
-            AltIcon(
-              ikon: Icons.work_outline,
-              label: 'İş & Staj',
-              isSelected: _selectedIndex == 4,
-              onTap: () => _onItemTapped(4),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
