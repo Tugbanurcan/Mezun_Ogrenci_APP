@@ -14,7 +14,6 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -25,40 +24,48 @@ class BottomNavBar extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          AltIcon(
-            ikon: Icons.chat,
-            label: 'Chat',
-            isSelected: currentIndex == 0,
-            onTap: () => onTap(0),
+      child: SafeArea(
+        child: Container(
+          height: 70, // 3. İkonların duracağı alanın yüksekliği buraya taşındı.
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+          ), // Kenarlardan hafif boşluk
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              AltIcon(
+                ikon: Icons.chat,
+                label: 'Chat',
+                isSelected: currentIndex == 0,
+                onTap: () => onTap(0),
+              ),
+              AltIcon(
+                ikon: Icons.event,
+                label: 'Etkinlikler',
+                isSelected: currentIndex == 1,
+                onTap: () => onTap(1),
+              ),
+              AltIcon(
+                ikon: Icons.home,
+                label: 'Ana Sayfa',
+                isSelected: currentIndex == 2,
+                onTap: () => onTap(2),
+              ),
+              AltIcon(
+                ikon: Icons.person_search,
+                label: 'Mentor Bul',
+                isSelected: currentIndex == 3,
+                onTap: () => onTap(3),
+              ),
+              AltIcon(
+                ikon: Icons.work_outline,
+                label: 'İş & Staj',
+                isSelected: currentIndex == 4,
+                onTap: () => onTap(4),
+              ),
+            ],
           ),
-          AltIcon(
-            ikon: Icons.event,
-            label: 'Etkinlikler',
-            isSelected: currentIndex == 1,
-            onTap: () => onTap(1),
-          ),
-          AltIcon(
-            ikon: Icons.home,
-            label: 'Ana Sayfa',
-            isSelected: currentIndex == 2,
-            onTap: () => onTap(2),
-          ),
-          AltIcon(
-            ikon: Icons.person_search,
-            label: 'Mentor Bul',
-            isSelected: currentIndex == 3,
-            onTap: () => onTap(3),
-          ),
-          AltIcon(
-            ikon: Icons.work_outline,
-            label: 'İş & Staj',
-            isSelected: currentIndex == 4,
-            onTap: () => onTap(4),
-          ),
-        ],
+        ),
       ),
     );
   }
