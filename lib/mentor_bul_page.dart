@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'is_staj_page.dart';
 import 'mentor_profil.dart';
+import 'etkinlikler_page.dart';
 // Yeni oluşturduğumuz widget'ı import ediyoruz
 import 'widgets/bottom_nav_bar.dart';
+import 'chat_page.dart';
 
 class MentorBulPage extends StatefulWidget {
   const MentorBulPage({super.key});
@@ -21,16 +23,30 @@ class _MentorBulPageState extends State<MentorBulPage> {
   // Navigasyon Yönlendirmeleri
   void _onItemTapped(int index) {
     if (index == _currentIndex) return; // Zaten bu sayfadaysak işlem yapma
-
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ChatPage()),
+      );
+    }
+    if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const EtkinliklerPage()),
+      );
+    }
     if (index == 2) {
-      // Ana Sayfa
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
       );
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const MentorBulPage()),
+      );
     } else if (index == 4) {
-      // İş & Staj Sayfası
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const IsStajPage()),
       );
