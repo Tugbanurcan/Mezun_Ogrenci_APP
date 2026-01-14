@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'home_page.dart';
 import 'mentor_bul_page.dart';
 import 'is_staj_ekle_page.dart'; // İlan ekleme sayfası
 import 'widgets/bottom_nav_bar.dart'; // Ortak alt menü
 import 'profile_view_screen.dart';
 import 'notifications.dart';
-import 'providers/saved_jobs_provider.dart';
-import 'saved_jobs_page.dart';
+import 'etkinlikler_page.dart';
+import 'chat_page.dart';
 
-class IsStajPage extends ConsumerStatefulWidget {
+class IsStajPage extends StatefulWidget {
   const IsStajPage({super.key});
 
   @override
-  ConsumerState<IsStajPage> createState() => _IsStajPageState();
+  State<IsStajPage> createState() => _IsStajPageState();
 }
 
-class _IsStajPageState extends ConsumerState<IsStajPage> {
+class _IsStajPageState extends State<IsStajPage> {
+  // Bu sayfa İş & Staj sayfası olduğu için indeksi 4
   final int _currentIndex = 4;
 
   // 🔹 1. FİLTRELEME İÇİN GEREKLİ DEĞİŞKENLER
@@ -26,18 +26,32 @@ class _IsStajPageState extends ConsumerState<IsStajPage> {
   // 🔹 NAVİGASYON YÖNLENDİRMELERİ
   void _onItemTapped(int index) {
     if (index == _currentIndex) return;
-
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ChatPage()),
+      );
+    }
+    if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const EtkinliklerPage()),
+      );
+    }
     if (index == 2) {
-      // Ana Sayfa
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
       );
     } else if (index == 3) {
-      // Mentor Bul
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
+      );
+    } else if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
       );
     }
     // Chat(0) ve Etkinlik(1) sayfaları eklendiğinde buraya yazabilirsin.
@@ -147,7 +161,15 @@ class _IsStajPageState extends ConsumerState<IsStajPage> {
       backgroundColor: Colors.white,
       elevation: 0,
       leadingWidth: 60,
-      automaticallyImplyLeading: false,
+      leading: IconButton(
+        icon: const Icon(Icons.account_circle, color: Colors.black87, size: 28),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
+          );
+        },
+      ),
       title: const Text(
         "İş & Staj İlanları",
         style: TextStyle(
@@ -158,25 +180,26 @@ class _IsStajPageState extends ConsumerState<IsStajPage> {
       ),
       centerTitle: true,
       actions: [
-        // 🆕 KAYDEDİLEN İŞLER BUTONU
-        IconButton(
-          icon: const Icon(Icons.bookmark_border, color: Colors.black87),
-          tooltip: "Kaydedilen İşler",
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SavedJobsPage()),
-            );
-          },
-        ),
         // 🆕 İLAN EKLEME BUTONU
         IconButton(
-          icon: const Icon(Icons.add, color: Colors.black87),
+          icon: const Icon(Icons.add_box_outlined, color: Colors.black87),
           tooltip: "Yeni İlan Ekle",
           onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const IsStajEklePage()),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(
+            Icons.notifications_none_rounded,
+            color: Colors.black54,
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificationPage()),
             );
           },
         ),
@@ -294,14 +317,6 @@ class _IsStajPageState extends ConsumerState<IsStajPage> {
   }
 
   Widget _buildJobCard(Map<String, dynamic> job) {
-    final isSaved = ref
-        .watch(savedJobsProvider)
-        .any(
-          (savedJob) =>
-              savedJob['title'] == job['title'] &&
-              savedJob['company'] == job['company'],
-        );
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -362,17 +377,7 @@ class _IsStajPageState extends ConsumerState<IsStajPage> {
                   ],
                 ),
               ),
-              IconButton(
-                icon: Icon(
-                  isSaved ? Icons.bookmark : Icons.bookmark_border,
-                  color: isSaved
-                      ? const Color(0xFF7AD0B0)
-                      : Colors.grey.shade400,
-                ),
-                onPressed: () {
-                  ref.read(savedJobsProvider.notifier).toggleSavedJob(job);
-                },
-              ),
+              Icon(Icons.bookmark_border, color: Colors.grey.shade400),
             ],
           ),
           const Divider(height: 25, thickness: 0.5),
