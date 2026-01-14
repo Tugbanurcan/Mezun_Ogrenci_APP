@@ -5,6 +5,8 @@ import 'providers/saved_jobs_provider.dart';
 import 'home_page.dart';
 import 'mentor_bul_page.dart';
 import 'is_staj_page.dart';
+import 'etkinlikler_page.dart';
+import 'chat_page.dart';
 
 class SavedJobsPage extends StatefulWidget {
   const SavedJobsPage({super.key});
@@ -18,7 +20,12 @@ class _SavedJobsPageState extends State<SavedJobsPage> {
 
   void _onItemTapped(int index) {
     if (index == _currentIndex) return;
-
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ChatPage()),
+      );
+    }
     if (index == 2) {
       // Ana Sayfa
       Navigator.pushReplacement(
