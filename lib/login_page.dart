@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'register_page.dart';
+import 'etkinlikler_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -35,7 +36,9 @@ class _LoginPageState extends State<LoginPage> {
               // ---------------------------
               // Hoş Geldin yazısının üst boşluğu
               // ---------------------------
-              SizedBox(height: 10), // Bunu değiştirerek yukarı/aşağı ayarlayabilirsin
+              SizedBox(
+                height: 10,
+              ), // Bunu değiştirerek yukarı/aşağı ayarlayabilirsin
               Text(
                 "Hoş Geldin",
                 style: TextStyle(
@@ -87,7 +90,8 @@ class _LoginPageState extends State<LoginPage> {
                     backgroundColor: primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text(
                     "Giriş Yap",
@@ -99,7 +103,9 @@ class _LoginPageState extends State<LoginPage> {
               // ---------------------------
               // “Hesabın yok mu? Kayıt ol” butonunun üst boşluğu
               // ---------------------------
-              SizedBox(height: 50), // Bunu değiştirerek boşluğu ayarlayabilirsin
+              SizedBox(
+                height: 50,
+              ), // Bunu değiştirerek boşluğu ayarlayabilirsin
               TextButton(
                 onPressed: () {
                   Navigator.push(
