@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'etkinlikler_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -12,7 +13,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
-  TextEditingController();
+      TextEditingController();
 
   bool isMentor = false; // Mentör checkbox durumu
   String selectedUserType = "Öğrenci"; // Kullanıcı tipi
@@ -43,67 +44,68 @@ class _RegisterPageState extends State<RegisterPage> {
         context: context,
         barrierDismissible: false,
         barrierColor: Colors.black.withOpacity(0.5),
-        builder: (_) =>
-            Dialog(
-              backgroundColor: Colors.transparent,
-              child: Center(
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 8,
-                  child: Padding(
-                    padding:
-                    const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: Colors.green,
-                          size: 60,
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          "Başarılı!",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          "Kayıt işleminiz başarıyla tamamlandı.",
-                          style: TextStyle(fontSize: 16),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 25),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context); // Dialog kapat
-                            Navigator.pop(context); // Login sayfasına dön
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme
-                                .of(context)
-                                .primaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 12),
-                          ),
-                          child: const Text(
-                            "Tamam",
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
-                        )
-                      ],
+        builder: (_) => Dialog(
+          backgroundColor: Colors.transparent,
+          child: Center(
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              elevation: 8,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 30,
+                  horizontal: 20,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 60,
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Başarılı!",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Kayıt işleminiz başarıyla tamamlandı.",
+                      style: TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 25),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Dialog kapat
+                        Navigator.pop(context); // Login sayfasına dön
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text(
+                        "Tamam",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
+          ),
+        ),
       );
     }
   }
@@ -121,9 +123,7 @@ class _RegisterPageState extends State<RegisterPage> {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         margin: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Theme
-              .of(context)
-              .primaryColor : Colors.grey[300],
+          color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300],
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
@@ -140,13 +140,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Theme
-        .of(context)
-        .primaryColor;
+    final Color primaryColor = Theme.of(context).primaryColor;
 
     // ✨ Boşlukları tek yerden ayarlayabilirsin
     const double gapSmall = 30;
-    const double Small = 20 ;
+    const double Small = 20;
     const double gapMedium = 25;
     const double Medium = 50;
     const double gapLarge = 40;
@@ -179,8 +177,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     labelText: "Kullanıcı Adı",
                     prefixIcon: Icon(Icons.person),
                   ),
-                  validator: (value) =>
-                  value == null || value.isEmpty
+                  validator: (value) => value == null || value.isEmpty
                       ? "Kullanıcı adı giriniz"
                       : null,
                 ),
@@ -196,8 +193,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons
-                            .visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -220,13 +218,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isConfirmPasswordVisible ? Icons.visibility : Icons
-                            .visibility_off,
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
                           _isConfirmPasswordVisible =
-                          !_isConfirmPasswordVisible;
+                              !_isConfirmPasswordVisible;
                         });
                       },
                     ),
