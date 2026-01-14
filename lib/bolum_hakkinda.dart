@@ -4,6 +4,8 @@ import 'widgets/bottom_nav_bar.dart';
 import 'home_page.dart';
 import 'is_staj_page.dart';
 import 'mentor_bul_page.dart';
+import 'etkinlikler_page.dart';
+import 'chat_page.dart';
 
 class BolumHakkindaPage extends StatefulWidget {
   const BolumHakkindaPage({super.key});
@@ -19,12 +21,32 @@ class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
     setState(() {
       _selectedIndex = index;
     });
-
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ChatPage()),
+      );
+    }
+    if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const EtkinliklerPage()),
+      );
+    }
     if (index == 2) {
-      // Ana Sayfa ikonu
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
+      );
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const MentorBulPage()),
+      );
+    } else if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
       );
     }
   }
