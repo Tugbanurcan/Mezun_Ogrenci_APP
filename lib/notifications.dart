@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'widgets/bottom_nav_bar.dart';
+import 'etkinlikler_page.dart';
 
 void main() => runApp(const MyApp());
 
@@ -209,7 +210,7 @@ class _NotificationPageState extends State<NotificationPage> {
         },
       ),
 
-      //  Scaffold'un doğru kapanışı ve bottomNavigationBar buraya gelecek
+      // 👇 Scaffold'un doğru kapanışı ve bottomNavigationBar buraya gelecek
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
