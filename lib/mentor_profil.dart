@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'etkinlikler_page.dart';
 
 const Color kPrimaryColor = Color(0xFFA65DD4);
 const Color kBackgroundColor = Color(0xFFF8F9FA);
