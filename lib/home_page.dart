@@ -8,8 +8,9 @@ import 'cv_hakkinda.dart';
 import 'mulakat_page.dart';
 import 'community_page.dart';
 import 'mentor_bul_page.dart';
-import 'widgets/bottom_nav_bar.dart';
 import 'is_staj_page.dart';
+import 'etkinlikler_page.dart';
+import 'chat_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -35,20 +36,32 @@ class AnaSayfa extends StatefulWidget {
 }
 
 class _AnaSayfaState extends State<AnaSayfa> {
-  int _currentIndex = 2;
+  int _selectedIndex = 2;
 
   void _onItemTapped(int index) {
-    if (index == _currentIndex) return;
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ChatPage()),
+      );
+    }
 
+    if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const EtkinliklerPage()),
+      );
+    }
     if (index == 2) {
-      // Ana Sayfa
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
       );
     } else if (index == 3) {
-      // Mentor Bul
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
       );
@@ -58,7 +71,6 @@ class _AnaSayfaState extends State<AnaSayfa> {
         MaterialPageRoute(builder: (_) => const IsStajPage()),
       );
     }
-    // Chat(0) ve Etkinlik(1) sayfaları eklendiğinde buraya yazabilirsin.
   }
 
   @override
@@ -397,9 +409,53 @@ class _AnaSayfaState extends State<AnaSayfa> {
       ),
 
       // ALT MENÜ
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
+      bottomNavigationBar: Container(
+        height: 70,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            AltIcon(
+              ikon: Icons.chat,
+              label: 'Chat',
+              isSelected: _selectedIndex == 0,
+              onTap: () => _onclick(0),
+            ),
+            AltIcon(
+              ikon: Icons.event,
+              label: 'Etkinlikler',
+              isSelected: _selectedIndex == 1,
+              onTap: () => _onclick(1),
+            ),
+            AltIcon(
+              ikon: Icons.home,
+              label: 'Ana Sayfa',
+              isSelected: _selectedIndex == 2,
+              onTap: () => _onclick(2),
+            ),
+            AltIcon(
+              ikon: Icons.person_search,
+              label: 'Mentor Bul',
+              isSelected: _selectedIndex == 3,
+              onTap: () => _onclick(3),
+            ),
+            AltIcon(
+              ikon: Icons.work_outline,
+              label: 'İş & Staj',
+              isSelected: _selectedIndex == 4,
+              onTap: () => _onclick(4),
+            ),
+          ],
+        ),
       ),
     );
   }
