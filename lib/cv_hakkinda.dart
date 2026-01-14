@@ -5,7 +5,7 @@ import 'profile_view_screen.dart';
 import 'home_page.dart';
 import 'is_staj_page.dart';
 import 'mentor_bul_page.dart';
-import 'widgets/bottom_nav_bar.dart';
+import 'etkinlikler_page.dart';
 
 class CvHakkindaPage extends StatefulWidget {
   const CvHakkindaPage({super.key});
@@ -15,25 +15,33 @@ class CvHakkindaPage extends StatefulWidget {
 }
 
 class _CvHakkindaPageState extends State<CvHakkindaPage> {
-  int _currentIndex = 2;
+  int _selectedIndex = 4;
 
   void _onItemTapped(int index) {
-    if (index == _currentIndex) return;
+    setState(() => _selectedIndex = index);
 
+    if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const EtkinliklerPage()),
+      );
+    }
     if (index == 2) {
-      // Ana Sayfa
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AnaSayfa()),
       );
     } else if (index == 3) {
-      // Mentor Bul
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
       );
+    } else if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IsStajPage()),
+      );
     }
-    // Chat(0) ve Etkinlik(1) sayfaları eklendiğinde buraya yazabilirsin.
   }
 
   @override
@@ -76,7 +84,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'desc': "En güncel deneyim en üstte.",
         'detail':
             "En güncel iş ve eğitim deneyimini ilk sıraya koymalısın. İş veren önce en güncel bilgiyi görmek ister.",
-
         'isOpen': false,
       },
       {
@@ -85,7 +92,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'desc': "Sade tasarım profesyonellik getirir.",
         'detail':
             "Karmaşık fontlar, çok renkli tasarımlar profesyonel görünmez. Modern ve sade bir tasarım tercih edin.",
-
         'isOpen': false,
       },
       {
@@ -94,7 +100,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'desc': "Abartma, doğrulanabilir bilgiler ver.",
         'detail':
             "İş verenler referans kontrolü yapabilir. Bu yüzden çalışma süreleri ve görevler doğrulanabilir olmalıdır.",
-
         'isOpen': false,
       },
       {
@@ -103,7 +108,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'desc': "Aynı CV’yi her yere göndermek hata!",
         'detail':
             "Başvurduğun pozisyona göre CV’ni ufak dokunuşlarla özelleştir. İlanda yazan yetenekleri öne çıkar.",
-
         'isOpen': false,
       },
       {
@@ -112,7 +116,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'desc': "TC kimlik, medeni hal gibi bilgiler eklenmez.",
         'detail':
             "Modern CV’lerde özel hayat bilgileri (doğum tarihi, adres, medeni hal vb.) gereksiz ve kullanılmamaktadır.",
-
         'isOpen': false,
       },
       {
@@ -121,7 +124,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'desc': "Profesyonel, sade bir fotoğraf tercih et.",
         'detail':
             "Fotoğraf zorunlu değildir. Ekliyorsan profesyonel bir fotoğraf tercih et. Selfie ve filtre kesinlikle olmaz.",
-
         'isOpen': false,
       },
       {
@@ -130,7 +132,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         'desc': "Sonuç ve katkılarını açıkla.",
         'detail':
             "Görev listesi yazmak yerine elde ettiğin başarıları vurgula. Örneğin: '%30 performans artışı sağladım'.",
-
         'isOpen': false,
       },
     ];
@@ -160,7 +161,6 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-
         actions: [],
       ),
 
@@ -282,9 +282,72 @@ class _CvHakkindaPageState extends State<CvHakkindaPage> {
         ),
       ),
 
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
+      bottomNavigationBar: Container(
+        height: 70,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            AltIcon(
+              ikon: Icons.chat,
+              label: 'Chat',
+              isSelected: false, // hiçbir ikon mavi olmayacak
+              onTap: () {
+                // Chat sayfan yok, yapılınca buraya yönlendirme eklersin
+              },
+            ),
+            AltIcon(
+              ikon: Icons.event,
+              label: 'Etkinlikler',
+              isSelected: false,
+              onTap: () {
+                // Etkinlikler sayfan yok, yapılınca ekle
+              },
+            ),
+            AltIcon(
+              ikon: Icons.home,
+              label: 'Ana Sayfa',
+              isSelected: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AnaSayfa()),
+                );
+              },
+            ),
+            AltIcon(
+              ikon: Icons.person_search,
+              label: 'Mentor Bul',
+              isSelected: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MentorBulPage()),
+                );
+              },
+            ),
+            AltIcon(
+              ikon: Icons.work_outline,
+              label: 'İş & Staj',
+              isSelected: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const IsStajPage()),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
