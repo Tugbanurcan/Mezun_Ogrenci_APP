@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'etkinlikler_page.dart';
 
 // Renk sabitleri
 const Color kPrimaryColor = Color(0xFFA65DD4);
@@ -194,7 +195,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
               _buildSectionHeader("İletişim"),
               _buildTextField(
-                'İletişim Bilgileri',
+                'Okul / Bölüm',
                 _communicationController,
                 Icons.mail,
               ),
