@@ -5,6 +5,8 @@ import 'is_staj_page.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'chat_page.dart';
 import 'home_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EtkinliklerPage extends StatefulWidget {
   const EtkinliklerPage({super.key});
@@ -17,9 +19,6 @@ class _EtkinliklerPageState extends State<EtkinliklerPage> {
   // Navigasyonda Etkinlikler indexi
   final int _currentIndex = 1;
 
-  // 🔥 KATILDIĞIM ETKİNLİKLER
-  final List<Map<String, String>> _katildiklarim = [];
-
   void _onItemTapped(int index) {
     if (index == _currentIndex) return;
     if (index == 0) {
@@ -28,7 +27,7 @@ class _EtkinliklerPageState extends State<EtkinliklerPage> {
         MaterialPageRoute(builder: (_) => const ChatPage()),
       );
     }
-    
+
     if (index == 2) {
       Navigator.pushReplacement(
         context,
@@ -48,60 +47,130 @@ class _EtkinliklerPageState extends State<EtkinliklerPage> {
   }
 
   // 🔹 Katıl
-  void _katil(Map<String, String> etkinlik) {
-    if (_katildiklarim.contains(etkinlik)) return;
+  Future<void> _katil(Map<String, String> etkinlik) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-    setState(() {
-      _katildiklarim.add(etkinlik);
-    });
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('joined_events')
+        .doc(etkinlik['id'])
+        .set({'joinedAt': FieldValue.serverTimestamp()});
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Etkinliğe katıldınız 🎉')));
+    ).showSnackBar(const SnackBar(content: Text('Katıldınız 🎉')));
   }
 
-  // 🔹 Katıldıklarım Modal
   void _showKatildiklarim() {
+    final user = FirebaseAuth.instance.currentUser;
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (_) {
-        if (_katildiklarim.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(24),
-            child: Center(
-              child: Text(
-                'Henüz katıldığınız bir etkinlik yok.',
-                style: TextStyle(fontSize: 15),
-              ),
-            ),
-          );
-        }
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .doc(user!.uid)
+              .collection('joined_events')
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _katildiklarim.length,
-          itemBuilder: (context, index) {
-            final etkinlik = _katildiklarim[index];
-            return Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: ListTile(
-                title: Text(etkinlik['baslik']!),
-                subtitle: Text(etkinlik['tarih']!),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    setState(() {
-                      _katildiklarim.removeAt(index);
-                    });
-                    Navigator.pop(context);
+            final joinedIds = snapshot.data!.docs.map((e) => e.id).toList();
+
+            if (joinedIds.isEmpty) {
+              return const Center(child: Text("Hiç katıldığın etkinlik yok"));
+            }
+
+            // 🔥 ŞİMDİ EVENTS'TEN ÇEKİYORUZ
+            return FutureBuilder<QuerySnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('etkinlikler')
+                  .get(),
+              builder: (context, eventSnapshot) {
+                if (!eventSnapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final allEvents = eventSnapshot.data!.docs;
+
+                final katildiklar = allEvents
+                    .where((e) => joinedIds.contains(e.id))
+                    .toList();
+
+                return ListView.builder(
+                  itemCount: katildiklar.length,
+                  itemBuilder: (context, index) {
+                    final e = katildiklar[index];
+
+                    final timestamp = e['tarih'] as Timestamp;
+                    final date = timestamp.toDate();
+
+                    final formattedDate =
+                        "${date.day}/${date.month}/${date.year}";
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.event, color: Colors.deepPurple),
+
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  e['baslik'],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  formattedDate,
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              final user = FirebaseAuth.instance.currentUser;
+
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(user!.uid)
+                                  .collection('joined_events')
+                                  .doc(e.id)
+                                  .delete();
+
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
                   },
-                ),
-              ),
+                );
+              },
             );
           },
         );
@@ -133,16 +202,36 @@ class _EtkinliklerPageState extends State<EtkinliklerPage> {
       ),
 
       // 🔹 LİSTE
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _etkinlikler.length,
-        itemBuilder: (context, index) {
-          final etkinlik = _etkinlikler[index];
-          return _EtkinlikKart(
-            baslik: etkinlik['baslik']!,
-            tarih: etkinlik['tarih']!,
-            aciklama: etkinlik['aciklama']!,
-            onKatil: () => _katil(etkinlik),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('etkinlikler')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final etkinlikler = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: etkinlikler.length,
+            itemBuilder: (context, index) {
+              final data = etkinlikler[index];
+
+              final timestamp = data['tarih'] as Timestamp;
+              final date = timestamp.toDate();
+
+              final formattedDate = "${date.day}/${date.month}/${date.year}";
+
+              return _EtkinlikKart(
+                baslik: data['baslik'],
+                tarih: formattedDate,
+                aciklama: data['aciklama'],
+                imageUrl: data['imageUrl'] ?? "https://via.placeholder.com/150",
+                onKatil: () => _katil({'id': data.id}),
+              );
+            },
           );
         },
       ),
@@ -165,12 +254,14 @@ class _EtkinlikKart extends StatelessWidget {
   final String tarih;
   final String aciklama;
   final VoidCallback onKatil;
+  final String imageUrl;
 
   const _EtkinlikKart({
     required this.baslik,
     required this.tarih,
     required this.aciklama,
     required this.onKatil,
+    required this.imageUrl,
   });
 
   @override
@@ -192,6 +283,16 @@ class _EtkinlikKart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              imageUrl,
+              height: 150,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 10),
           Text(
             baslik,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -215,7 +316,19 @@ class _EtkinlikKart extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EtkinlikDetayPage(
+                          baslik: baslik,
+                          tarih: tarih,
+                          aciklama: aciklama,
+                          imageUrl: imageUrl,
+                        ),
+                      ),
+                    );
+                  },
                   child: const Text('Detaylar'),
                 ),
               ),
@@ -237,25 +350,45 @@ class _EtkinlikKart extends StatelessWidget {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/*                               DUMMY DATA                                   */
-/* -------------------------------------------------------------------------- */
+class EtkinlikDetayPage extends StatelessWidget {
+  final String baslik;
+  final String tarih;
+  final String aciklama;
+  final String imageUrl;
 
-final List<Map<String, String>> _etkinlikler = [
-  {
-    'baslik': 'Flutter ile Mobil Uygulama Geliştirme',
-    'tarih': '20 Mart 2026',
-    'aciklama':
-        'Flutter kullanarak modern ve performanslı mobil uygulamalar geliştirme.',
-  },
-  {
-    'baslik': 'Yapay Zeka ve Makine Öğrenmesi',
-    'tarih': '28 Mart 2026',
-    'aciklama': 'Makine öğrenmesi algoritmaları ve gerçek hayat uygulamaları.',
-  },
-  {
-    'baslik': 'Kariyer Planlama & CV Hazırlama',
-    'tarih': '5 Nisan 2026',
-    'aciklama': 'Yeni mezunlar için CV hazırlama ve mülakat teknikleri.',
-  },
-];
+  const EtkinlikDetayPage({
+    super.key,
+    required this.baslik,
+    required this.tarih,
+    required this.aciklama,
+    required this.imageUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(baslik)),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(imageUrl),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              baslik,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(tarih, style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 20),
+            Text(aciklama, style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+      ),
+    );
+  }
+}

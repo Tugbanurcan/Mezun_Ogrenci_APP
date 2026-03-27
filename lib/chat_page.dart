@@ -21,8 +21,6 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     currentUser = FirebaseAuth.instance.currentUser!.uid;
-
-    print("BENİM UID: $currentUser");
   }
 
   String _arama = '';
@@ -118,8 +116,26 @@ class _ChatPageState extends State<ChatPage> {
                           return const ListTile(title: Text("Yükleniyor..."));
                         }
 
-                        final userData = userSnap.data!;
-                        final name = userData['name']; // şimdilik email kullan
+                        final doc = userSnap.data as DocumentSnapshot;
+
+                        // ❗ 1. kullanıcı yoksa
+                        if (!doc.exists) {
+                          return const ListTile(
+                            title: Text("Kullanıcı bulunamadı"),
+                          );
+                        }
+
+                        final rawData = doc.data();
+
+                        // ❗ 2. data null ise
+                        if (rawData == null) {
+                          return const ListTile(title: Text("Veri yok"));
+                        }
+
+                        final data = rawData as Map<String, dynamic>;
+
+                        final name =
+                            data['name'] ?? data['email'] ?? "Kullanıcı";
 
                         return ListTile(
                           leading: CircleAvatar(
