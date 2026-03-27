@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'etkinlikler_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -10,6 +12,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
@@ -31,82 +34,51 @@ class _RegisterPageState extends State<RegisterPage> {
     return null;
   }
 
-  void register() {
+  Future<void> register() async {
     if (_formKey.currentState!.validate()) {
-      // Backend’e gönderilecek veriler
-      print("Kullanıcı Adı: ${usernameController.text}");
-      print("Şifre: ${passwordController.text}");
-      print("Kullanıcı Tipi: $selectedUserType");
-      print("Mentör mü?: $isMentor");
+      try {
+        // Firebase Auth ile kullanıcı oluştur
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+              email: usernameController.text.trim(),
+              password: passwordController.text.trim(),
+            );
 
-      // Modern popup dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        barrierColor: Colors.black.withOpacity(0.5),
-        builder: (_) => Dialog(
-          backgroundColor: Colors.transparent,
-          child: Center(
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+        // Firestore'a kullanıcı bilgisi kaydet
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+              "name": usernameController.text.split("@")[0],
+              "email": usernameController.text.trim(),
+              "userType": selectedUserType,
+              "isMentor": isMentor,
+              "createdAt": Timestamp.now(),
+            });
+
+        // Başarılı popup
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => AlertDialog(
+            title: const Text("Başarılı"),
+            content: const Text("Kayıt başarıyla oluşturuldu"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                child: const Text("Tamam"),
               ),
-              elevation: 8,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 30,
-                  horizontal: 20,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 60,
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Başarılı!",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Kayıt işleminiz başarıyla tamamlandı.",
-                      style: TextStyle(fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 25),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context); // Dialog kapat
-                        Navigator.pop(context); // Login sayfasına dön
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: const Text(
-                        "Tamam",
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            ],
           ),
-        ),
-      );
+        );
+      } on FirebaseAuthException catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message ?? "Kayıt hatası")));
+      }
     }
   }
 
@@ -169,12 +141,20 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
 
                 SizedBox(height: gapLarge),
-
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: "Ad Soyad",
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? "Adınızı giriniz" : null,
+                ),
                 // Kullanıcı Adı
                 TextFormField(
                   controller: usernameController,
                   decoration: const InputDecoration(
-                    labelText: "Kullanıcı Adı",
+                    labelText: "Email",
                     prefixIcon: Icon(Icons.person),
                   ),
                   validator: (value) => value == null || value.isEmpty
