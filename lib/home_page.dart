@@ -11,6 +11,10 @@ import 'mentor_bul_page.dart';
 import 'is_staj_page.dart';
 import 'etkinlikler_page.dart';
 import 'chat_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'chat_detail_page.dart';
+import 'chat_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -77,19 +81,16 @@ class _AnaSayfaState extends State<AnaSayfa> {
   Widget build(BuildContext context) {
     final List<Map<String, String>> profiller = [
       {
+        'uid': 'UID_1',
         'isim': 'Selenay Demirpençe',
         'unvan': 'Computer Engineer',
         'aciklama': 'AI • Flutter • ML Enthusiast',
       },
       {
+        'uid': 'UID_2',
         'isim': 'Ahmet Yılmaz',
         'unvan': 'Software Developer',
         'aciklama': 'Mobile Apps | Firebase | Backend',
-      },
-      {
-        'isim': 'Elif Kaya',
-        'unvan': 'Data Scientist',
-        'aciklama': 'Python • NLP • Deep Learning',
       },
     ];
 
@@ -195,94 +196,98 @@ class _AnaSayfaState extends State<AnaSayfa> {
                 controller: PageController(viewportFraction: 0.88),
                 itemBuilder: (context, index) {
                   final profil = profiller[index];
-                  return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 10,
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const CircleAvatar(
-                          radius: 35,
-                          backgroundColor: Color(0xFFE0E0E0),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                profil['isim']!,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                profil['unvan']!,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                profil['aciklama']!,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
 
-                              // ⭐ Yıldızlar
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                    size: 20,
-                                  ),
-                                  Icon(
-                                    Icons.star_border,
-                                    color: Colors.grey,
-                                    size: 20,
-                                  ),
-                                  Icon(
-                                    Icons.star_border,
-                                    color: Colors.grey,
-                                    size: 20,
-                                  ),
-                                  Icon(
-                                    Icons.star_border,
-                                    color: Colors.grey,
-                                    size: 20,
-                                  ),
-                                  Icon(
-                                    Icons.star_border,
-                                    color: Colors.grey,
-                                    size: 20,
-                                  ),
-                                ],
-                              ),
-                            ],
+                  return GestureDetector(
+                    onTap: () async {
+                      String otherUserId = profil['uid']!;
+
+                      String chatId = await createOrGetChat(otherUserId);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChatDetailPage(
+                            chatId: chatId,
+                            isim: profil['isim'] ?? '',
                           ),
                         ),
-                      ],
+                      );
+                    },
+
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 10,
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 35,
+                            backgroundColor: Color(0xFFE0E0E0),
+                          ),
+                          const SizedBox(width: 16),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  profil['isim'] ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  profil['unvan'] ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  profil['aciklama'] ?? '',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+
+                                Row(
+                                  children: List.generate(
+                                    5,
+                                    (i) => Icon(
+                                      i == 0 ? Icons.star : Icons.star_border,
+                                      color: i == 0
+                                          ? Colors.amber
+                                          : Colors.grey,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -320,8 +325,8 @@ class _AnaSayfaState extends State<AnaSayfa> {
                   ],
                 ),
                 padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: const [
+                child: const Column(
+                  children: [
                     _EtkinlikSatiri(),
                     SizedBox(height: 8),
                     _EtkinlikSatiri(),
@@ -334,7 +339,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
 
             const SizedBox(height: 40),
 
-            // 🔸 KARE BUTONLAR (Modern, Renkli, Responsive)
+            // 🔸 KARE BUTONLAR
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -343,62 +348,49 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     child: _KareButon(
                       ikon: Icons.work_outline,
                       label: "CV",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const CvHakkindaPage(),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CvHakkindaPage(),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
-
                   Expanded(
                     child: _KareButon(
                       ikon: Icons.description_outlined,
                       label: "FORUM",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const CommunityPage(),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CommunityPage(),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
-
                   Expanded(
                     child: _KareButon(
                       ikon: Icons.people_outline,
                       label: "MÜLAKAT",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MulakatPage(),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MulakatPage()),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
-
                   Expanded(
                     child: _KareButon(
                       ikon: Icons.school,
                       label: "AKADEMİSYENLER",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const BolumHakkindaPage(),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BolumHakkindaPage(),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -559,4 +551,29 @@ class _KareButon extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<String> createOrGetChat(String otherUserId) async {
+  final currentUser = FirebaseAuth.instance.currentUser!.uid;
+
+  final query = await FirebaseFirestore.instance
+      .collection('chats')
+      .where('participants', arrayContains: currentUser)
+      .get();
+
+  for (var doc in query.docs) {
+    List users = doc['participants'];
+
+    if (users.contains(otherUserId)) {
+      return doc.id;
+    }
+  }
+
+  final newChat = await FirebaseFirestore.instance.collection('chats').add({
+    'participants': [currentUser, otherUserId],
+    'lastMessage': '',
+    'timestamp': FieldValue.serverTimestamp(),
+  });
+
+  return newChat.id;
 }
