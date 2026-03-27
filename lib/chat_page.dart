@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_detail_page.dart';
 import 'home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'users_page.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -148,6 +149,15 @@ class _ChatPageState extends State<ChatPage> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const UsersPage()),
+          );
+        },
+        child: Icon(Icons.add),
       ),
     );
   }
