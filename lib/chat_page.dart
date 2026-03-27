@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_detail_page.dart';
+import 'home_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -11,34 +14,34 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _searchController = TextEditingController();
 
-  // 🔹 Kullanıcı listesi (State içinde → silme için gerekli)
-  final List<Map<String, String>> _kullanicilar = [
-    {'isim': 'Selenay Demirpençe', 'sonMesaj': 'Merhaba 👋'},
-    {'isim': 'Ahmet Yılmaz', 'sonMesaj': 'Toplantı ne zaman?'},
-    {'isim': 'Elif Kaya', 'sonMesaj': 'Projeye baktım 👍'},
-    {'isim': 'Mehmet Demir', 'sonMesaj': 'CV’yi gönderebilir misin?'},
-  ];
+  late String currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    currentUser = FirebaseAuth.instance.currentUser!.uid;
+
+    print("BENİM UID: $currentUser");
+  }
 
   String _arama = '';
 
   @override
   Widget build(BuildContext context) {
-    // 🔍 Arama filtresi
-    final filtreliListe = _kullanicilar.where((kisi) {
-      final q = _arama.toLowerCase();
-      if (q.isEmpty) return true;
-
-      return kisi['isim']!.toLowerCase().contains(q) ||
-          kisi['sonMesaj']!.toLowerCase().contains(q);
-    }).toList();
-
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-
-      // 🔹 APPBAR
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const AnaSayfa()),
+            );
+          },
+        ),
         centerTitle: true,
         title: const Text(
           'Sohbetler',
@@ -48,12 +51,16 @@ class _ChatPageState extends State<ChatPage> {
 
       body: Column(
         children: [
-          // 🔍 ARAMA KUTUSU
+          /// 🔍 ARAMA
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
               controller: _searchController,
-              onChanged: (v) => setState(() => _arama = v),
+              onChanged: (v) {
+                setState(() {
+                  _arama = v.toLowerCase();
+                });
+              },
               decoration: InputDecoration(
                 hintText: 'Kişi veya mesaj ara...',
                 prefixIcon: const Icon(Icons.search),
@@ -68,46 +75,74 @@ class _ChatPageState extends State<ChatPage> {
             ),
           ),
 
-          // 🔹 CHAT LİSTESİ
+          /// 🔥 GERÇEK CHAT LİSTESİ
           Expanded(
-            child: ListView.separated(
-              itemCount: filtreliListe.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final kisi = filtreliListe[index];
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('chats')
+                  .where('participants', arrayContains: currentUser)
+                  .snapshots(),
 
-                return GestureDetector(
-                  onLongPress: () {
-                    _showDeleteDialog(context, kisi);
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final chats = snapshot.data!.docs;
+
+                if (chats.isEmpty) {
+                  return const Center(child: Text("Henüz sohbet yok"));
+                }
+
+                return ListView.separated(
+                  itemCount: chats.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+
+                  itemBuilder: (context, index) {
+                    final chat = chats[index];
+
+                    final List participants = chat['participants'];
+
+                    final otherUser = participants.firstWhere(
+                      (u) => u != currentUser,
+                    );
+
+                    return FutureBuilder(
+                      future: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(otherUser)
+                          .get(),
+                      builder: (context, userSnap) {
+                        if (!userSnap.hasData) {
+                          return const ListTile(title: Text("Yükleniyor..."));
+                        }
+
+                        final userData = userSnap.data!;
+                        final name = userData['name']; // şimdilik email kullan
+
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.deepPurple.shade200,
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            ),
+                          ),
+                          title: Text(name),
+                          subtitle: Text(chat['lastMessage'] ?? ""),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ChatDetailPage(chatId: chat.id, isim: name),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
                   },
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.deepPurple.shade200,
-                      child: const Icon(Icons.person, color: Colors.white),
-                    ),
-                    title: Text(
-                      kisi['isim']!,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      kisi['sonMesaj']!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                      color: Colors.grey,
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ChatDetailPage(isim: kisi['isim']!),
-                        ),
-                      );
-                    },
-                  ),
                 );
               },
             ),
@@ -116,40 +151,31 @@ class _ChatPageState extends State<ChatPage> {
       ),
     );
   }
+}
 
-  // 🗑️ SİLME DİYALOĞU
-  void _showDeleteDialog(BuildContext context, Map<String, String> kisi) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Sohbeti Sil',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: Text('${kisi['isim']} ile olan sohbet silinsin mi?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              setState(() {
-                _kullanicilar.remove(kisi);
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Sil'),
-          ),
-        ],
-      ),
-    );
+Future<String> createOrGetChat(String otherUserId) async {
+  final currentUser = FirebaseAuth.instance.currentUser!.uid;
+
+  // daha önce chat var mı?
+  final query = await FirebaseFirestore.instance
+      .collection('chats')
+      .where('participants', arrayContains: currentUser)
+      .get();
+
+  for (var doc in query.docs) {
+    List users = doc['participants'];
+
+    if (users.contains(otherUserId)) {
+      return doc.id; // chat zaten var
+    }
   }
+
+  // yoksa yeni oluştur
+  final newChat = await FirebaseFirestore.instance.collection('chats').add({
+    'participants': [currentUser, otherUserId],
+    'lastMessage': '',
+    'timestamp': FieldValue.serverTimestamp(),
+  });
+
+  return newChat.id;
 }
