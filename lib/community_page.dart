@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'widgets/alt_icon.dart';
-import 'widgets/bottom_nav_bar.dart';
-import 'home_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'profile_view_screen.dart';
+import 'forum_ekle_page.dart';
+import 'widgets/bottom_nav_bar.dart';
+// Diğer sayfaların importlarını kendi proje yapına göre kontrol et
+import 'home_page.dart';
 import 'etkinlikler_page.dart';
 import 'is_staj_page.dart';
 import 'mentor_bul_page.dart';
@@ -15,41 +18,35 @@ class CommunityPage extends StatefulWidget {
   State<CommunityPage> createState() => _CommunityPageState();
 }
 
-// altbar fonksiyonu
 class _CommunityPageState extends State<CommunityPage> {
-  int _selectedIndex = -1; // Alt bardaki seçili ikon
+  int _selectedIndex = 2; // Forum sayfası genellikle orta sekmedir
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    if (index == 0) {
+    // Navigasyon mantığını burada yönetebilirsin
+    if (index == 0)
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ChatPage()),
       );
-    }
-    if (index == 1) {
+    if (index == 1)
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const EtkinliklerPage()),
       );
-    }
-    if (index == 2) {
+    if (index == 2) return; // Zaten bu sayfadayız
+    if (index == 3)
       Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AnaSayfa()),
-      );
-    } else if (index == 3) {
-      Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const MentorBulPage()),
       );
-    } else if (index == 4) {
-      Navigator.push(
+    if (index == 4)
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const IsStajPage()),
       );
-    }
   }
 
   @override
@@ -64,13 +61,15 @@ class _CommunityPageState extends State<CommunityPage> {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 15.0),
-            // 1. ADIM: Tıklama özelliği için GestureDetector ekliyoruz
             child: GestureDetector(
               onTap: () {
-                // 2. ADIM: Sayfa geçiş kodunu buraya yazıyoruz
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -79,7 +78,7 @@ class _CommunityPageState extends State<CommunityPage> {
                 );
               },
               child: const CircleAvatar(
-                radius: 15,
+                radius: 18,
                 backgroundColor: Colors.black,
                 child: Icon(Icons.person, color: Colors.white, size: 20),
               ),
@@ -87,25 +86,64 @@ class _CommunityPageState extends State<CommunityPage> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
-          ForumKarti(
-            etiket: "Staj",
-            cevapSayisi: "3 Cevap",
-            baslik: "Yaz stajı bulmak için ne yapmalıyım?",
-            aciklama: "Staj başvuruları konusunda...",
-            yazarBilgisi: "Ahmet Yılmaz . 2 gün önce",
-          ),
-          SizedBox(height: 15),
-          ForumKarti(
-            etiket: "Ders",
-            cevapSayisi: "5 Cevap",
-            baslik: "Veri Yapıları dersi için kaynak önerisi...",
-            aciklama: "Çalışma için etkili kaynaklar arıyorum...",
-            yazarBilgisi: "Zeynep Demir . 2 gün önce",
-          ),
-        ],
+      // --- FIREBASE STREAMBUILDER KISMI ---
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('forums')
+            .orderBy(
+              'timestamp',
+              descending: true,
+            ) // En yeni konuyu en üstte göster
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text("Veriler yüklenirken bir hata oluştu."),
+            );
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.black),
+            );
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
+              child: Text("Henüz hiç tartışma başlatılmamış."),
+            );
+          }
+
+          final docs = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: ForumKarti(
+                  etiket: data['category'] ?? "Genel",
+                  cevapSayisi: "${data['repliesCount'] ?? 0} Cevap",
+                  baslik: data['title'] ?? "Başlıksız",
+                  aciklama: data['description'] ?? "",
+                  yazarBilgisi: "${data['author'] ?? 'Anonim'} . 1 gün önce",
+                  // Not: Tarih formatı için intl paketi kullanılabilir
+                ),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ForumEklePage()),
+          );
+        },
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
@@ -115,28 +153,7 @@ class _CommunityPageState extends State<CommunityPage> {
   }
 }
 
-// --- YARDIMCI WIDGET'LAR AYNI DOSYADA KALABİLİR VEYA BAŞKA DOSYAYA ALINABİLİR ---
-
-class CustomButton extends StatelessWidget {
-  final String text;
-
-  const CustomButton({required this.text, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
+// --- GÖRSELDEKİ TASARIMA UYGUN FORUM KARTI ---
 
 class ForumKarti extends StatelessWidget {
   final String etiket;
@@ -160,8 +177,8 @@ class ForumKarti extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black, width: 2),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: Colors.black, width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,17 +188,20 @@ class ForumKarti extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
+                  horizontal: 14,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.black54),
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.black26),
                 ),
                 child: Text(
                   etiket,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
               Container(
@@ -190,46 +210,76 @@ class ForumKarti extends StatelessWidget {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Text(cevapSayisi, style: const TextStyle(fontSize: 12)),
+                child: Text(
+                  cevapSayisi,
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 15),
           Text(
             baslik,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 8),
           Text(
             aciklama,
-            style: TextStyle(color: Colors.grey[600]),
-            maxLines: 1,
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 20),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(
-                child: Text(
-                  yazarBilgisi,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                ),
+              Text(
+                yazarBilgisi,
+                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
               ),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
-                  CustomButton(text: "Cevapla"),
-                  SizedBox(height: 5),
-                  CustomButton(text: "Cevapları gör"),
+                children: [
+                  _ActionButton(text: "Cevapla", onTap: () {}),
+                  const SizedBox(height: 8),
+                  _ActionButton(text: "Cevapları gör", onTap: () {}),
                 ],
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onTap;
+
+  const _ActionButton({required this.text, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }

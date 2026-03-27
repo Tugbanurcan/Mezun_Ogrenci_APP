@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:untitled4/forum_ekle_page.dart';
+import 'package:untitled4/login_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 
@@ -12,9 +14,9 @@ import 'is_staj_ekle_page.dart';
 import 'etkinlikler_page.dart';
 
 // Renk Paleti
-const Color kPrimaryColor = Color(0xFFA65DD4);
-const Color kSecondaryColor = Color.fromARGB(104, 105, 27, 154);
-const Color kBackgroundColor = Color(0xFFF8F9FA);
+const Color kPrimaryColor = Color.fromARGB(255, 0, 0, 0);
+const Color kSecondaryColor = Color.fromARGB(119, 255, 255, 255);
+const Color kBackgroundColor = Color.fromARGB(255, 255, 255, 255);
 
 class ProfileViewScreen extends ConsumerWidget {
   const ProfileViewScreen({super.key});
@@ -306,9 +308,12 @@ class ProfileViewScreen extends ConsumerWidget {
                           ),
                           tooltip: "Konu Başlat",
                           onPressed: () {
-                            // BURAYA DİKKAT: Forum ekleme sayfana yönlendir
-                            // Navigator.push(context, MaterialPageRoute(builder: (context) => const ForumEklePage()));
-                            print("Forum Ekleme Sayfasına Gidiliyor...");
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ForumEklePage(),
+                              ),
+                            );
                           },
                         ),
                         // 2. Sayfaya Gitme Butonu
@@ -332,6 +337,69 @@ class ProfileViewScreen extends ConsumerWidget {
                       style: TextStyle(color: Colors.grey, height: 1.4),
                     ),
                   ),
+                  // --- BURAYA EKLE: ÇIKIŞ YAP BUTONU ---
+                  const SizedBox(height: 35),
+                  Center(
+                    child: InkWell(
+                      onTap: () => _showLogoutDialog(context),
+                      borderRadius: BorderRadius.circular(15),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: const Color.fromARGB(
+                              255,
+                              0,
+                              0,
+                              0,
+                            ).withOpacity(0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color.fromARGB(
+                                255,
+                                0,
+                                0,
+                                0,
+                              ).withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize
+                              .min, // Sadece içeriği kadar kaplasın (Estetik durur)
+                          children: [
+                            Icon(
+                              Icons.power_settings_new_rounded,
+                              color: const Color.fromARGB(255, 0, 0, 0),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              "Çıkış Yap",
+                              style: TextStyle(
+                                color: const Color.fromARGB(255, 0, 0, 0),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 60,
+                  ), // Sayfanın en altında boşluk kalsın, sıkışmasın
                 ],
               ),
             ),
@@ -715,6 +783,178 @@ class ProfileViewScreen extends ConsumerWidget {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.black.withOpacity(0.6),
+      transitionDuration: const Duration(milliseconds: 300),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+        return ScaleTransition(
+          scale: curvedAnimation,
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.85,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 40,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 20),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // --- İkon Alanı ---
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.only(top: 36, bottom: 20),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(28),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 255, 255, 255),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.logout_rounded,
+                            color: Color(0xFFD32F2F),
+                            size: 30,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // --- İçerik ---
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 24, 28, 8),
+                    child: Column(
+                      children: [
+                        Text(
+                          "Çıkış Yap",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(context).colorScheme.onSurface,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          "Oturumunuz sonlandırılacaktır.\nEmin misiniz?",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            height: 1.55,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.55),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // --- Butonlar ---
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                    child: Row(
+                      children: [
+                        // Vazgeç
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                side: BorderSide(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              "Vazgeç",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Çıkış Yap
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                                (route) => false,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFD32F2F),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              "Çıkış Yap",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
