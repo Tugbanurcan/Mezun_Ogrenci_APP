@@ -13,7 +13,6 @@ import 'etkinlikler_page.dart';
 import 'chat_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'chat_detail_page.dart';
-import 'chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() {
@@ -51,19 +50,13 @@ class _AnaSayfaState extends State<AnaSayfa> {
         context,
         MaterialPageRoute(builder: (_) => const ChatPage()),
       );
-    }
-
-    if (index == 1) {
+    } else if (index == 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const EtkinliklerPage()),
       );
-    }
-    if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AnaSayfa()),
-      );
+    } else if (index == 2) {
+      // Zaten Ana Sayfadayız
     } else if (index == 3) {
       Navigator.push(
         context,
@@ -96,7 +89,6 @@ class _AnaSayfaState extends State<AnaSayfa> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -132,271 +124,273 @@ class _AnaSayfaState extends State<AnaSayfa> {
           ),
         ],
       ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 16, bottom: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ⭐ BAŞLIK
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 6,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 26,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF7AD0B0),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Icon(
+                          Icons.groups_rounded,
+                          color: Color(0xFF7AD0B0),
+                          size: 24,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Mentörlerimiz',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 4,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF7AD0B0), Color(0xFF47A397)],
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-      body: Padding(
-        padding: const EdgeInsets.only(top: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ⭐ BAŞLIK
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 26,
+              const SizedBox(height: 12),
+
+              // 🔸 PROFİL KARTLARI (PageView)
+              SizedBox(
+                height: 180,
+                child: PageView.builder(
+                  itemCount: profiller.length,
+                  controller: PageController(viewportFraction: 0.88),
+                  itemBuilder: (context, index) {
+                    final profil = profiller[index];
+
+                    return GestureDetector(
+                      onTap: () async {
+                        String otherUserId = profil['uid']!;
+                        String chatId = await createOrGetChat(otherUserId);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChatDetailPage(
+                              chatId: chatId,
+                              isim: profil['isim'] ?? '',
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 10,
+                        ),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF7AD0B0),
-                          borderRadius: BorderRadius.circular(4),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            const CircleAvatar(
+                              radius: 35,
+                              backgroundColor: Color(0xFFE0E0E0),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    profil['isim'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    profil['unvan'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    profil['aciklama'] ?? '',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: List.generate(
+                                      5,
+                                      (i) => Icon(
+                                        i == 0 ? Icons.star : Icons.star_border,
+                                        color: i == 0
+                                            ? Colors.amber
+                                            : Colors.grey,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      const Icon(
-                        Icons.groups_rounded,
-                        color: Color(0xFF7AD0B0),
-                        size: 24,
-                      ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        'Mentörlerimiz',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ⭐ ETKİNLİK BAŞLIĞI
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Text(
+                  'Yaklaşan Etkinlikler',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+
+              // Etkinlik kartı
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 4,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF7AD0B0), Color(0xFF47A397)],
-                      ),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                  padding: const EdgeInsets.all(12),
+                  child: const Column(
+                    children: [
+                      _EtkinlikSatiri(),
+                      SizedBox(height: 8),
+                      _EtkinlikSatiri(),
+                      SizedBox(height: 8),
+                      _EtkinlikSatiri(),
+                    ],
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // 🔸 PROFİL KARTLARI
-            SizedBox(
-              height: 180,
-              child: PageView.builder(
-                itemCount: profiller.length,
-                controller: PageController(viewportFraction: 0.88),
-                itemBuilder: (context, index) {
-                  final profil = profiller[index];
-
-                  return GestureDetector(
-                    onTap: () async {
-                      String otherUserId = profil['uid']!;
-
-                      String chatId = await createOrGetChat(otherUserId);
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ChatDetailPage(
-                            chatId: chatId,
-                            isim: profil['isim'] ?? '',
-                          ),
-                        ),
-                      );
-                    },
-
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 10,
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          const CircleAvatar(
-                            radius: 35,
-                            backgroundColor: Color(0xFFE0E0E0),
-                          ),
-                          const SizedBox(width: 16),
-
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  profil['isim'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  profil['unvan'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  profil['aciklama'] ?? '',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-
-                                Row(
-                                  children: List.generate(
-                                    5,
-                                    (i) => Icon(
-                                      i == 0 ? Icons.star : Icons.star_border,
-                                      color: i == 0
-                                          ? Colors.amber
-                                          : Colors.grey,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ⭐ ETKİNLİK BAŞLIĞI
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Text(
-                'Yaklaşan Etkinlikler',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
                 ),
               ),
-            ),
 
-            // Etkinlik kartı
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(12),
-                child: const Column(
+              const SizedBox(height: 30),
+
+              // 🔸 KARE BUTONLAR
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
                   children: [
-                    _EtkinlikSatiri(),
-                    SizedBox(height: 8),
-                    _EtkinlikSatiri(),
-                    SizedBox(height: 8),
-                    _EtkinlikSatiri(),
+                    Expanded(
+                      child: _KareButon(
+                        ikon: Icons.work_outline,
+                        label: "CV",
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CvHakkindaPage(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _KareButon(
+                        ikon: Icons.description_outlined,
+                        label: "FORUM",
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CommunityPage(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _KareButon(
+                        ikon: Icons.people_outline,
+                        label: "MÜLAKAT",
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MulakatPage(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _KareButon(
+                        ikon: Icons.school,
+                        label: "AKADEMİ",
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const BolumHakkindaPage(),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-
-            const SizedBox(height: 40),
-
-            // 🔸 KARE BUTONLAR
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _KareButon(
-                      ikon: Icons.work_outline,
-                      label: "CV",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const CvHakkindaPage(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _KareButon(
-                      ikon: Icons.description_outlined,
-                      label: "FORUM",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const CommunityPage(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _KareButon(
-                      ikon: Icons.people_outline,
-                      label: "MÜLAKAT",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const MulakatPage()),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _KareButon(
-                      ikon: Icons.school,
-                      label: "AKADEMİSYENLER",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const BolumHakkindaPage(),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
 
@@ -481,7 +475,6 @@ class _EtkinlikSatiri extends StatelessWidget {
   }
 }
 
-// 🔥 MODERN KARE BUTON SINIFI
 class _KareButon extends StatelessWidget {
   final IconData ikon;
   final String label;
@@ -498,16 +491,12 @@ class _KareButon extends StatelessWidget {
     switch (label) {
       case "CV":
         return const Color(0xFFE3F2FD);
-
       case "FORUM":
         return const Color(0xFFFFF3E0);
-
       case "MÜLAKAT":
         return const Color(0xFFE8F5E9);
-
-      case "AKADEMİSYENLER":
+      case "AKADEMİ":
         return const Color(0xFFF3E5F5);
-
       default:
         return const Color(0xFFE0E0E0);
     }
@@ -520,10 +509,10 @@ class _KareButon extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            height: 90,
+            height: 80, // Mobilde daha iyi sığması için biraz küçültüldü
             decoration: BoxDecoration(
               color: _getColor(label),
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -532,7 +521,7 @@ class _KareButon extends StatelessWidget {
                 ),
               ],
             ),
-            child: Center(child: Icon(ikon, size: 34, color: Colors.black87)),
+            child: Center(child: Icon(ikon, size: 30, color: Colors.black87)),
           ),
           const SizedBox(height: 8),
           FittedBox(
@@ -541,7 +530,7 @@ class _KareButon extends StatelessWidget {
               label,
               maxLines: 1,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: Colors.black87,
               ),
@@ -554,7 +543,9 @@ class _KareButon extends StatelessWidget {
 }
 
 Future<String> createOrGetChat(String otherUserId) async {
-  final currentUser = FirebaseAuth.instance.currentUser!.uid;
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return "";
+  final currentUser = user.uid;
 
   final query = await FirebaseFirestore.instance
       .collection('chats')
@@ -563,7 +554,6 @@ Future<String> createOrGetChat(String otherUserId) async {
 
   for (var doc in query.docs) {
     List users = doc['participants'];
-
     if (users.contains(otherUserId)) {
       return doc.id;
     }
