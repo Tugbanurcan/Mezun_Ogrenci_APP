@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'etkinlikler_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Renk sabitleri
 const Color kPrimaryColor = Color(0xFFA65DD4);
@@ -35,48 +36,26 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   @override
   void initState() {
     super.initState();
+
     final initialData = ref.read(userProfileNotifierProvider);
+    final userEmail = FirebaseAuth.instance.currentUser?.email ?? "";
 
-    // --- BURAYI GÜNCELLEDİK ---
-    // Eğer veri boşsa, varsayılan (örnek) verilerle dolduruyoruz.
-    // Veri varsa, kullanıcının kaydettiğini getiriyoruz.
+    _nameController = TextEditingController(text: initialData.name);
 
-    _nameController = TextEditingController(
-      text: initialData.name.isNotEmpty ? initialData.name : "İrem Naz",
-    );
+    _titleController = TextEditingController(text: initialData.title);
 
-    _titleController = TextEditingController(
-      text: initialData.title.isNotEmpty
-          ? initialData.title
-          : "Bilgisayar Müh. 4. Sınıf",
-    );
+    _aboutController = TextEditingController(text: initialData.about);
 
-    _aboutController = TextEditingController(
-      text: initialData.about.isNotEmpty
-          ? initialData.about
-          : "Merhaba! Ben teknolojiye meraklı, Flutter ile mobil uygulamalar geliştiren bir mühendis adayıyım. Yeni teknolojileri öğrenmeyi ve proje geliştirmeyi seviyorum.",
-    );
+    _linkedinController = TextEditingController(text: initialData.linkedin);
 
-    _linkedinController = TextEditingController(
-      text: initialData.linkedin.isNotEmpty
-          ? initialData.linkedin
-          : "iiremsens",
-    );
+    _githubController = TextEditingController(text: initialData.github);
 
-    _githubController = TextEditingController(
-      text: initialData.github.isNotEmpty ? initialData.github : "iiremsens",
-    );
-
-    _educationController = TextEditingController(
-      text: initialData.education.isNotEmpty
-          ? initialData.education
-          : "Kastamonu Üniversitesi",
-    );
+    _educationController = TextEditingController(text: initialData.education);
 
     _communicationController = TextEditingController(
       text: initialData.communication.isNotEmpty
           ? initialData.communication
-          : "iremsen@gmail.com",
+          : userEmail, // Firebase mail otomatik gelir
     );
 
     _currentPhotoPath = initialData.photoPath;
