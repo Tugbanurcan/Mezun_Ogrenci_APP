@@ -562,7 +562,7 @@ Future<String> createOrGetChat(String otherUserId) async {
   final newChat = await FirebaseFirestore.instance.collection('chats').add({
     'participants': [currentUser, otherUserId],
     'lastMessage': '',
-    'timestamp': FieldValue.serverTimestamp,
+    'timestamp': FieldValue.serverTimestamp(),
   });
 
   return newChat.id;

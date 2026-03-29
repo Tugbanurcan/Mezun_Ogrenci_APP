@@ -12,6 +12,8 @@ import 'is_staj_page.dart';
 import 'community_page.dart';
 import 'is_staj_ekle_page.dart';
 import 'etkinlikler_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Renk Paleti
 const Color kPrimaryColor = Color.fromARGB(255, 0, 0, 0);
@@ -296,27 +298,22 @@ class ProfileViewScreen extends ConsumerWidget {
                   _buildContentCard(
                     title: "Forum",
                     icon: Icons.forum_outlined,
-                    // ACTION KISMI GÜNCELLENDİ 👇
                     action: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 1. Forum Konusu Ekleme Butonu
                         IconButton(
                           icon: const Icon(
                             Icons.add_circle_outline,
                             color: Colors.black87,
                           ),
                           tooltip: "Konu Başlat",
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ForumEklePage(),
-                              ),
-                            );
-                          },
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ForumEklePage(),
+                            ),
+                          ),
                         ),
-                        // 2. Sayfaya Gitme Butonu
                         IconButton(
                           icon: const Icon(
                             Icons.arrow_forward,
@@ -332,9 +329,149 @@ class ProfileViewScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    content: const Text(
-                      "Topluluk forumlarına katılın, sorular sorun veya yeni bir tartışma başlatın.",
-                      style: TextStyle(color: Colors.grey, height: 1.4),
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Topluluk forumlarına katılın, sorular sorun veya yeni bir tartışma başlatın.",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            height: 1.4,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // YENİ PROFESYONEL BAŞLIK
+                        StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('forums')
+                              .where(
+                                'userId',
+                                isEqualTo:
+                                    FirebaseAuth.instance.currentUser?.uid,
+                              )
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            final count = snapshot.hasData
+                                ? snapshot.data!.docs.length
+                                : 0;
+                            return Row(
+                              children: [
+                                Icon(
+                                  Icons.forum_outlined,
+                                  size: 18,
+                                  color: kPrimaryColor.withOpacity(0.7),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Paylaşımlarım",
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                if (count > 0)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: kPrimaryColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      count.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: kPrimaryColor,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('forums')
+                              .where(
+                                'userId',
+                                isEqualTo:
+                                    FirebaseAuth.instance.currentUser?.uid,
+                              )
+                              .orderBy('timestamp', descending: true)
+                              .limit(5)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const SizedBox(
+                                height: 120,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[50],
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(color: Colors.grey[200]!),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.create_outlined,
+                                      color: Colors.grey,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      "Henüz bir tartışma başlatmadınız.",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            final docs = snapshot.data!.docs;
+
+                            return SizedBox(
+                              height: 130, // Biraz yükselttik
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: docs.length,
+                                itemBuilder: (context, index) {
+                                  final data =
+                                      docs[index].data()
+                                          as Map<String, dynamic>;
+                                  return _buildMyForumHorizontalCard(data);
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                   // --- BURAYA EKLE: ÇIKIŞ YAP BUTONU ---
@@ -957,6 +1094,86 @@ class ProfileViewScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildMyForumHorizontalCard(Map<String, dynamic> data) {
+    return Container(
+      width: 200, // Biraz daha genişlettik okunabilirlik için
+      margin: const EdgeInsets.only(right: 14, bottom: 5),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.grey[100]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.indigo[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  data['category'] ?? "Genel",
+                  style: TextStyle(
+                    color: Colors.indigo[700],
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Icon(Icons.more_horiz, size: 16, color: Colors.grey[400]),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            data['title'] ?? "Başlıksız",
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Colors.black87,
+              height: 1.2,
+            ),
+          ),
+          const Spacer(),
+          Row(
+            children: [
+              const Icon(
+                Icons.forum_rounded,
+                size: 14,
+                color: Colors.orangeAccent,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "${data['repliesCount'] ?? 0} Cevap",
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
