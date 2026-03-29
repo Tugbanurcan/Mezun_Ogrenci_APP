@@ -1176,4 +1176,30 @@ class ProfileViewScreen extends ConsumerWidget {
       ),
     );
   }
+
+  // Verileri Firebase'den çekip Riverpod'u güncelleyen metod
+  Future<void> _fetchAndSyncUserData(WidgetRef ref) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        ref
+            .read(userProfileNotifierProvider.notifier)
+            .updateProfile(
+              name: data['name'] ?? "",
+              title: data['title'] ?? "",
+              about: data['about'] ?? "",
+              linkedin: data['linkedin'] ?? "",
+              github: data['github'] ?? "",
+              education: data['education'] ?? "",
+              communication: data['communication'] ?? (data['email'] ?? ""),
+              photoPath: data['photoPath'],
+            );
+      }
+    }
+  }
 }

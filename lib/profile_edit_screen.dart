@@ -8,9 +8,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'etkinlikler_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Renk sabitleri
 const Color kPrimaryColor = Color(0xFFA65DD4);
+bool _isLoading = false;
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
   const ProfileEditScreen({Key? key}) : super(key: key);
@@ -73,11 +76,26 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _pickedImage = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> _saveChanges() async {
+    setState(() => _isLoading = true); // İsteğe bağlı: Loading ekleyebilirsin
+
+    final String uid = FirebaseAuth.instance.currentUser?.uid ?? "";
+    if (uid.isEmpty) return;
+
     String? photoPath = _currentPhotoPath;
 
     if (_pickedImage != null) {
-      // Save the image to app directory
       final directory = await getApplicationDocumentsDirectory();
       final fileName = path.basename(_pickedImage!.path);
       final savedImage = await _pickedImage!.copy(
@@ -86,45 +104,52 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       photoPath = savedImage.path;
     }
 
-    ref
-        .read(userProfileNotifierProvider.notifier)
-        .updateProfile(
-          name: _nameController.text,
-          title: _titleController.text,
-          about: _aboutController.text,
-          linkedin: _linkedinController.text,
-          github: _githubController.text,
-          education: _educationController.text,
-          communication: _communicationController.text,
-          photoPath: photoPath,
-        );
-
-    Navigator.pop(context);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profil başarıyla güncellendi'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
-  Future<void> _pickImage() async {
     try {
-      final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 800,
-        imageQuality: 85,
-      );
+      // 1. ADIM: VERİTABANINI (FIRESTORE) GÜNCELLE
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'name': _nameController.text.trim(),
+        'title': _titleController.text.trim(),
+        'about': _aboutController.text.trim(),
+        'linkedin': _linkedinController.text.trim(),
+        'github': _githubController.text.trim(),
+        'education': _educationController.text.trim(),
+        'communication': _communicationController.text.trim(),
+        'photoPath':
+            photoPath, // Not: Resimler için ilerde Firebase Storage kullanmalısın
+        'lastUpdate': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true)); // Sadece değişen alanları üzerine yazar
 
-      if (pickedFile != null) {
-        setState(() {
-          _pickedImage = File(pickedFile.path);
-        });
+      // 2. ADIM: RIVERPOD'U (YEREL DURUM) GÜNCELLE
+      ref
+          .read(userProfileNotifierProvider.notifier)
+          .updateProfile(
+            name: _nameController.text.trim(),
+            title: _titleController.text.trim(),
+            about: _aboutController.text.trim(),
+            linkedin: _linkedinController.text.trim(),
+            github: _githubController.text.trim(),
+            education: _educationController.text.trim(),
+            communication: _communicationController.text.trim(),
+            photoPath: photoPath,
+          );
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profil başarıyla buluta kaydedildi!'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
     } catch (e) {
-      debugPrint("Resim seçme hatası: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -285,8 +310,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             child: GestureDetector(
               onTap: _pickImage,
               child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
                   color: kPrimaryColor,
                   shape: BoxShape.circle,
                 ),
