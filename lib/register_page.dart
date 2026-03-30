@@ -84,7 +84,12 @@ class _RegisterPageState extends State<RegisterPage>
             "name": nameController.text.trim(),
             "email": emailController.text.trim(),
             "userType": selectedUserType,
-            "isMentor": isMentor,
+            "mentorRequest": isMentor,
+            "mentorApproved": false,
+            "unvan": "",
+            "sirket": "",
+            "yil": "",
+            "aciklama": "",
             "createdAt": Timestamp.now(),
           });
 

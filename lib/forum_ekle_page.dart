@@ -40,7 +40,7 @@ class _ForumEklePageState extends ConsumerState<ForumEklePage> {
         'description': _contentController.text.trim(),
         'category': selectedCategory,
         'author': user.name, // Ekranda görünecek isim
-        'userId': user.id, // KRİTİK: Forumu açan kişinin benzersiz ID'si
+
         'timestamp': FieldValue.serverTimestamp(),
         'repliesCount': 0,
       });
