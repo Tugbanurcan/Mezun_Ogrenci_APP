@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/user_provider.dart'; // Dosya yolunu kontrol et
+import '../providers/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ForumEklePage extends ConsumerStatefulWidget {
@@ -26,7 +26,6 @@ class _ForumEklePageState extends ConsumerState<ForumEklePage> {
   ];
   bool _isLoading = false;
 
-  // Modern Input Dekorasyonu için yardımcı metod
   InputDecoration _buildInputDecoration(String hint, IconData icon) {
     return InputDecoration(
       hintText: hint,
@@ -54,20 +53,26 @@ class _ForumEklePageState extends ConsumerState<ForumEklePage> {
 
     setState(() => _isLoading = true);
 
-    final user = ref.read(userProfileNotifierProvider);
     final String currentUid =
         FirebaseAuth.instance.currentUser?.uid ?? 'anonim_user';
-    final String currentUserName = user.name.isNotEmpty
-        ? user.name
-        : "Mezun/Öğrenci";
 
     try {
+      // Firestore'dan kullanıcı bilgilerini çek
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUid)
+          .get();
+
+      final String currentUserName = userDoc.data()?['name'] ?? 'Anonim';
+      final String userType = userDoc.data()?['userType'] ?? 'Öğrenci';
+
       await FirebaseFirestore.instance.collection('forums').add({
         'title': _titleController.text.trim(),
         'description': _contentController.text.trim(),
         'category': selectedCategory,
         'author': currentUserName,
         'userId': currentUid,
+        'userType': userType,
         'timestamp': FieldValue.serverTimestamp(),
         'repliesCount': 0,
       });

@@ -314,16 +314,7 @@ class _LoginPageState extends State<LoginPage>
                     const SizedBox(height: 60),
 
                     // ---- Başlık Alanı ----
-                    Container(
-                      width: 52,
-                      height: 52,
-
-                      child: const Icon(
-                        Icons.bolt_rounded,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
+                    Container(width: 52, height: 52),
                     const SizedBox(height: 28),
                     Center(
                       child: const Text(

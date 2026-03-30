@@ -244,16 +244,7 @@ class _RegisterPageState extends State<RegisterPage>
                     const SizedBox(height: 60),
 
                     // ---- Başlık ----
-                    Container(
-                      width: 52,
-                      height: 52,
-
-                      child: const Icon(
-                        Icons.person_add_rounded,
-                        color: Colors.white,
-                        size: 26,
-                      ),
-                    ),
+                    Container(width: 52, height: 52),
                     const SizedBox(height: 28),
                     const Center(
                       child: Text(

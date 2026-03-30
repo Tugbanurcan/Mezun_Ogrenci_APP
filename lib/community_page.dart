@@ -48,20 +48,6 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
             icon: const Icon(Icons.search, color: Colors.black87),
             onPressed: () {},
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
-              ),
-              child: const CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.indigo,
-                child: Icon(Icons.person, color: Colors.white, size: 18),
-              ),
-            ),
-          ),
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -91,14 +77,13 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const ForumEklePage()),
         ),
         backgroundColor: primaryColor,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text("Ekle", style: TextStyle(color: Colors.white)),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
@@ -190,13 +175,15 @@ class ForumModernKart extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            // YAZAR BİLGİSİ SATIRI - bul ve güncelle
             Row(
               children: [
                 CircleAvatar(
                   radius: 11,
                   backgroundColor: typeColor.withOpacity(0.1),
                   child: Text(
-                    userType[0].toUpperCase(),
+                    (data['author'] ?? "A")[0]
+                        .toUpperCase(), // userType[0] değil, author[0]
                     style: TextStyle(
                       color: typeColor,
                       fontSize: 10,
@@ -574,13 +561,20 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     _focusNode.unfocus();
   }
 
-  // --- DÜZELTME 4: Yorum gönderilirken parentCommentId Firestore'a kaydediliyor ---
   Future<void> _submitComment() async {
     final text = _commentController.text.trim();
     if (text.isEmpty) return;
 
     final user = FirebaseAuth.instance.currentUser;
-    final String authorName = user?.displayName ?? "Anonim";
+    if (user == null) return;
+
+    // Firestore'dan gerçek ismi çek
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    final String authorName = userDoc.data()?['name'] ?? 'Anonim';
 
     try {
       await FirebaseFirestore.instance
@@ -589,11 +583,10 @@ class _CommentsSheetState extends State<_CommentsSheet> {
           .collection('comments')
           .add({
             'content': text,
-            'author': authorName,
-            'userId': user?.uid,
+            'author': authorName, // artık Firestore'dan geliyor
+            'userId': user.uid,
             'timestamp': FieldValue.serverTimestamp(),
             'likes': [],
-            // parentCommentId: yanıtsa set edilir, ana yorumsa null kalır
             'parentCommentId': _replyToCommentId,
           });
 
@@ -605,7 +598,6 @@ class _CommentsSheetState extends State<_CommentsSheet> {
       _commentController.clear();
       _focusNode.unfocus();
 
-      // Gönderimden sonra yanıt modunu sıfırla
       setState(() {
         _replyToCommentId = null;
         _replyToAuthorName = null;

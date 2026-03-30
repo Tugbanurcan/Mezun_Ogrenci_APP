@@ -4,16 +4,12 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../providers/user_provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
-import 'etkinlikler_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart'; // kIsWeb için
 
-// Renk sabitleri
 const Color kPrimaryColor = Color(0xFFA65DD4);
-bool _isLoading = false;
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
   const ProfileEditScreen({Key? key}) : super(key: key);
@@ -31,8 +27,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   late final TextEditingController _educationController;
   late final TextEditingController _communicationController;
 
-  File? _pickedImage;
+  XFile? _pickedImage; // File? yerine XFile?
   String? _currentPhotoPath;
+  bool _isLoading = false;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -44,23 +41,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     final userEmail = FirebaseAuth.instance.currentUser?.email ?? "";
 
     _nameController = TextEditingController(text: initialData.name);
-
     _titleController = TextEditingController(text: initialData.title);
-
     _aboutController = TextEditingController(text: initialData.about);
-
     _linkedinController = TextEditingController(text: initialData.linkedin);
-
     _githubController = TextEditingController(text: initialData.github);
-
     _educationController = TextEditingController(text: initialData.education);
-
     _communicationController = TextEditingController(
       text: initialData.communication.isNotEmpty
           ? initialData.communication
-          : userEmail, // Firebase mail otomatik gelir
+          : userEmail,
     );
-
     _currentPhotoPath = initialData.photoPath;
   }
 
@@ -82,30 +72,41 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
     if (pickedFile != null) {
       setState(() {
-        _pickedImage = File(pickedFile.path);
+        _pickedImage = pickedFile;
       });
     }
   }
 
   Future<void> _saveChanges() async {
-    setState(() => _isLoading = true); // İsteğe bağlı: Loading ekleyebilirsin
+    setState(() => _isLoading = true);
 
     final String uid = FirebaseAuth.instance.currentUser?.uid ?? "";
-    if (uid.isEmpty) return;
-
-    String? photoPath = _currentPhotoPath;
-
-    if (_pickedImage != null) {
-      final directory = await getApplicationDocumentsDirectory();
-      final fileName = path.basename(_pickedImage!.path);
-      final savedImage = await _pickedImage!.copy(
-        '${directory.path}/$fileName',
-      );
-      photoPath = savedImage.path;
+    if (uid.isEmpty) {
+      setState(() => _isLoading = false);
+      return;
     }
+    String? photoUrl = _currentPhotoPath;
 
     try {
-      // 1. ADIM: VERİTABANINI (FIRESTORE) GÜNCELLE
+      if (_pickedImage != null) {
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('profile_photos')
+            .child('$uid.jpg');
+
+        if (kIsWeb) {
+          final bytes = await _pickedImage!.readAsBytes();
+          await storageRef.putData(
+            bytes,
+            SettableMetadata(contentType: 'image/jpeg'),
+          );
+        } else {
+          await storageRef.putFile(File(_pickedImage!.path));
+        }
+
+        photoUrl = await storageRef.getDownloadURL();
+      }
+
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'name': _nameController.text.trim(),
         'title': _titleController.text.trim(),
@@ -114,12 +115,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         'github': _githubController.text.trim(),
         'education': _educationController.text.trim(),
         'communication': _communicationController.text.trim(),
-        'photoPath':
-            photoPath, // Not: Resimler için ilerde Firebase Storage kullanmalısın
+        'photoUrl': photoUrl,
         'lastUpdate': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true)); // Sadece değişen alanları üzerine yazar
+      }, SetOptions(merge: true));
 
-      // 2. ADIM: RIVERPOD'U (YEREL DURUM) GÜNCELLE
       ref
           .read(userProfileNotifierProvider.notifier)
           .updateProfile(
@@ -130,14 +129,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             github: _githubController.text.trim(),
             education: _educationController.text.trim(),
             communication: _communicationController.text.trim(),
-            photoPath: photoPath,
+            photoPath: photoUrl,
           );
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Profil başarıyla buluta kaydedildi!'),
+            content: Text('Profil başarıyla kaydedildi!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -177,7 +176,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               const SizedBox(height: 30),
               _buildSectionHeader("Kişisel Bilgiler"),
               _buildTextField('Ad Soyad', _nameController, Icons.person),
-
               const SizedBox(height: 30),
               _buildTextField('Unvan', _titleController, Icons.work),
               const SizedBox(height: 30),
@@ -194,20 +192,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 _educationController,
                 Icons.school,
               ),
-
               const SizedBox(height: 40),
-
               _buildSectionHeader("İletişim"),
               _buildTextField(
-                'Okul / Bölüm',
+                'E-posta / Telefon',
                 _communicationController,
                 Icons.mail,
               ),
-
               const SizedBox(height: 40),
-
               _buildSectionHeader("Sosyal Medya"),
-
               Row(
                 children: [
                   Expanded(
@@ -231,7 +224,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               SizedBox(
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: _saveChanges,
+                  onPressed: _isLoading ? null : _saveChanges,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimaryColor,
                     shape: RoundedRectangleBorder(
@@ -239,14 +232,23 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     ),
                     elevation: 5,
                   ),
-                  child: const Text(
-                    'Değişiklikleri Kaydet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : const Text(
+                          'Değişiklikleri Kaydet',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -274,9 +276,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   Widget _buildImagePicker() {
     ImageProvider? imageProvider;
     if (_pickedImage != null) {
-      imageProvider = FileImage(_pickedImage!);
+      if (kIsWeb) {
+        imageProvider = NetworkImage(_pickedImage!.path);
+      } else {
+        imageProvider = FileImage(File(_pickedImage!.path));
+      }
     } else if (_currentPhotoPath != null) {
-      imageProvider = FileImage(File(_currentPhotoPath!));
+      imageProvider = NetworkImage(_currentPhotoPath!);
     }
 
     return Center(
@@ -310,8 +316,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             child: GestureDetector(
               onTap: _pickImage,
               child: Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
                   color: kPrimaryColor,
                   shape: BoxShape.circle,
                 ),
@@ -337,7 +343,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
-      // Hint text özelliğini kaldırdık çünkü artık varsayılan text var
       decoration: InputDecoration(
         labelText: label,
         floatingLabelBehavior: FloatingLabelBehavior.always,
