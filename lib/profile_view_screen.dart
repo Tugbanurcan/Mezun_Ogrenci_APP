@@ -11,18 +11,56 @@ import 'profile_edit_screen.dart';
 import 'is_staj_page.dart';
 import 'community_page.dart';
 import 'is_staj_ekle_page.dart';
-import 'etkinlikler_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-// Renk Paleti
 const Color kPrimaryColor = Color.fromARGB(255, 0, 0, 0);
 const Color kSecondaryColor = Color.fromARGB(119, 255, 255, 255);
 const Color kBackgroundColor = Color.fromARGB(255, 255, 255, 255);
 
-class ProfileViewScreen extends ConsumerWidget {
+class ProfileViewScreen extends ConsumerStatefulWidget {
   const ProfileViewScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileViewScreen> createState() => _ProfileViewScreenState();
+}
+
+class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchAndSyncUserData();
+    });
+  }
+
+  Future<void> _fetchAndSyncUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        ref
+            .read(userProfileNotifierProvider.notifier)
+            .updateProfile(
+              name: data['name'] ?? "",
+              title: data['title'] ?? "",
+              about: data['about'] ?? "",
+              linkedin: data['linkedin'] ?? "",
+              github: data['github'] ?? "",
+              education: data['education'] ?? "",
+              communication: data['communication'] ?? (data['email'] ?? ""),
+              photoPath: data['photoUrl'],
+            );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userProfile = ref.watch(userProfileNotifierProvider);
     final size = MediaQuery.of(context).size;
 
@@ -53,12 +91,10 @@ class ProfileViewScreen extends ConsumerWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // ÜST KISIM (Header + Avatar) - BURASI AYNI KALDI
             Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
-                // Arka Plan Gradient
                 Container(
                   height: size.height * 0.28,
                   width: double.infinity,
@@ -74,7 +110,6 @@ class ProfileViewScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                // Profil Fotoğrafı
                 Positioned(
                   bottom: -60,
                   child: Container(
@@ -94,7 +129,7 @@ class ProfileViewScreen extends ConsumerWidget {
                       radius: 65,
                       backgroundColor: Colors.grey.shade200,
                       backgroundImage: userProfile.photoPath != null
-                          ? FileImage(File(userProfile.photoPath!))
+                          ? NetworkImage(userProfile.photoPath!)
                           : null,
                       child: userProfile.photoPath == null
                           ? Icon(
@@ -109,18 +144,16 @@ class ProfileViewScreen extends ConsumerWidget {
               ],
             ),
 
-            const SizedBox(height: 70), // Avatar boşluğu
-            // --- DEĞİŞİKLİK BURADA YAPILDI ---
+            const SizedBox(height: 70),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  // İsim ve İkonlar YAN YANA (Row)
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center, // Ortala
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // 1. İsim
                       Flexible(
                         child: Text(
                           userProfile.name,
@@ -132,38 +165,28 @@ class ProfileViewScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-
-                      // 2. Sosyal İkonlar (İsmin yanına)
                       if (userProfile.linkedin.isNotEmpty ||
                           userProfile.github.isNotEmpty) ...[
-                        const SizedBox(width: 10), // İsimle ikon arasına boşluk
-
+                        const SizedBox(width: 10),
                         if (userProfile.linkedin.isNotEmpty)
                           _buildSmallSocialIcon(
                             FontAwesomeIcons.linkedinIn,
                             const Color(0xFF0077B5),
                             userProfile.linkedin,
-                            context,
                           ),
-
                         if (userProfile.linkedin.isNotEmpty &&
                             userProfile.github.isNotEmpty)
-                          const SizedBox(width: 8), // İki ikon arası boşluk
-
+                          const SizedBox(width: 8),
                         if (userProfile.github.isNotEmpty)
                           _buildSmallSocialIcon(
                             FontAwesomeIcons.github,
                             const Color(0xFF333333),
                             userProfile.github,
-                            context,
                           ),
                       ],
                     ],
                   ),
-
                   const SizedBox(height: 5),
-
-                  // 3. Unvan (İsmin Altında)
                   Text(
                     userProfile.title,
                     textAlign: TextAlign.center,
@@ -177,10 +200,8 @@ class ProfileViewScreen extends ConsumerWidget {
               ),
             ),
 
-            // --- DEĞİŞİKLİK SONU ---
             const SizedBox(height: 25),
 
-            // KARTLAR (BİLGİLER)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -202,28 +223,25 @@ class ProfileViewScreen extends ConsumerWidget {
                     action: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 1. Düzenle Butonu (Kalem)
                         IconButton(
                           icon: const Icon(Icons.edit, color: kPrimaryColor),
                           tooltip: "Düzenle",
                           onPressed: () => _showManageSkillsDialog(
                             context,
-                            ref,
                             userProfile.skills,
                           ),
                         ),
-                        // 2. Ekle Butonu (Artı)
                         IconButton(
                           icon: const Icon(
                             Icons.add_circle,
                             color: kPrimaryColor,
                           ),
                           tooltip: "Ekle",
-                          onPressed: () => _showAddSkillDialog(context, ref),
+                          onPressed: () => _showAddSkillDialog(context),
                         ),
                       ],
                     ),
-                    content: _buildSkillsWrap(userProfile.skills, context, ref),
+                    content: _buildSkillsWrap(userProfile.skills),
                   ),
                   _buildContentCard(
                     title: "Eğitim",
@@ -236,7 +254,6 @@ class ProfileViewScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-
                   _buildContentCard(
                     title: "İletişim",
                     icon: Icons.mail,
@@ -248,14 +265,12 @@ class ProfileViewScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-
                   _buildContentCard(
                     title: "İş & Staj",
                     icon: Icons.work_outline,
                     action: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 1. İlan Ekleme Butonu
                         IconButton(
                           icon: const Icon(
                             Icons.add_circle_outline,
@@ -271,7 +286,6 @@ class ProfileViewScreen extends ConsumerWidget {
                             );
                           },
                         ),
-                        // 2. Sayfaya Gitme Butonu
                         IconButton(
                           icon: const Icon(
                             Icons.arrow_forward,
@@ -292,31 +306,25 @@ class ProfileViewScreen extends ConsumerWidget {
                       style: TextStyle(color: Colors.grey, height: 1.4),
                     ),
                   ),
-
                   _buildContentCard(
                     title: "Forum",
                     icon: Icons.forum_outlined,
-                    // ACTION KISMI GÜNCELLENDİ 👇
                     action: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 1. Forum Konusu Ekleme Butonu
                         IconButton(
                           icon: const Icon(
                             Icons.add_circle_outline,
                             color: Colors.black87,
                           ),
                           tooltip: "Konu Başlat",
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ForumEklePage(),
-                              ),
-                            );
-                          },
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ForumEklePage(),
+                            ),
+                          ),
                         ),
-                        // 2. Sayfaya Gitme Butonu
                         IconButton(
                           icon: const Icon(
                             Icons.arrow_forward,
@@ -332,12 +340,147 @@ class ProfileViewScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    content: const Text(
-                      "Topluluk forumlarına katılın, sorular sorun veya yeni bir tartışma başlatın.",
-                      style: TextStyle(color: Colors.grey, height: 1.4),
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Topluluk forumlarına katılın, sorular sorun veya yeni bir tartışma başlatın.",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            height: 1.4,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('forums')
+                              .where(
+                                'userId',
+                                isEqualTo:
+                                    FirebaseAuth.instance.currentUser?.uid,
+                              )
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            final count = snapshot.hasData
+                                ? snapshot.data!.docs.length
+                                : 0;
+                            return Row(
+                              children: [
+                                Icon(
+                                  Icons.forum_outlined,
+                                  size: 18,
+                                  color: kPrimaryColor.withOpacity(0.7),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  "Paylaşımlarım",
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                if (count > 0)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: kPrimaryColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      count.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: kPrimaryColor,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('forums')
+                              .where(
+                                'userId',
+                                isEqualTo:
+                                    FirebaseAuth.instance.currentUser?.uid,
+                              )
+                              .orderBy('timestamp', descending: true)
+                              .limit(5)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const SizedBox(
+                                height: 120,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              );
+                            }
+                            if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[50],
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(color: Colors.grey[200]!),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.create_outlined,
+                                      color: Colors.grey,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      "Henüz bir tartışma başlatmadınız.",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            final docs = snapshot.data!.docs;
+                            return SizedBox(
+                              height: 130,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: docs.length,
+                                itemBuilder: (context, index) {
+                                  final doc = docs[index];
+                                  final data =
+                                      doc.data() as Map<String, dynamic>;
+                                  return _buildMyForumHorizontalCard(
+                                    data,
+                                    doc.id,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  // --- BURAYA EKLE: ÇIKIŞ YAP BUTONU ---
                   const SizedBox(height: 35),
                   Center(
                     child: InkWell(
@@ -373,20 +516,19 @@ class ProfileViewScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize
-                              .min, // Sadece içeriği kadar kaplasın (Estetik durur)
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.power_settings_new_rounded,
-                              color: const Color.fromARGB(255, 0, 0, 0),
+                              color: Color.fromARGB(255, 0, 0, 0),
                               size: 20,
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: 10),
                             Text(
                               "Çıkış Yap",
                               style: TextStyle(
-                                color: const Color.fromARGB(255, 0, 0, 0),
+                                color: Color.fromARGB(255, 0, 0, 0),
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                                 letterSpacing: 0.3,
@@ -397,9 +539,7 @@ class ProfileViewScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 60,
-                  ), // Sayfanın en altında boşluk kalsın, sıkışmasın
+                  const SizedBox(height: 60),
                 ],
               ),
             ),
@@ -461,27 +601,19 @@ class ProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSkillsWrap(
-    List<String> skills,
-    BuildContext context,
-    WidgetRef ref,
-  ) {
+  Widget _buildSkillsWrap(List<String> skills) {
     if (skills.isEmpty) {
       return const Text(
         "Henüz yetkinlik eklenmemiş.",
         style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
       );
     }
-
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: skills.map((skill) {
         return GestureDetector(
-          onLongPress: () {
-            // Artık parametre olarak gelen 'context'i kullanabilir
-            _showDeleteConfirmDialog(context, ref, skill);
-          },
+          onLongPress: () => _showDeleteConfirmDialog(context, skill),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
@@ -503,28 +635,21 @@ class ProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSmallSocialIcon(
-    IconData icon,
-    Color color,
-    String handle,
-    BuildContext context,
-  ) {
+  Widget _buildSmallSocialIcon(IconData icon, Color color, String handle) {
     String url = (icon == FontAwesomeIcons.linkedinIn)
         ? 'https://www.linkedin.com/in/$handle'
         : 'https://github.com/$handle';
 
     return GestureDetector(
-      onTap: () => _launchUrlSafely(url, context),
+      onTap: () => _launchUrlSafely(url),
       child: Container(
-        width: 32, // Küçük boyut
+        width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1), // Hafif renkli arka plan
+          color: color.withOpacity(0.1),
           shape: BoxShape.circle,
         ),
-        child: Center(
-          child: FaIcon(icon, color: color, size: 16), // İkon boyutu küçük
-        ),
+        child: Center(child: FaIcon(icon, color: color, size: 16)),
       ),
     );
   }
@@ -536,12 +661,12 @@ class ProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  void _launchUrlSafely(String urlString, BuildContext context) async {
+  void _launchUrlSafely(String urlString) async {
     try {
       final Uri uri = Uri.parse(urlString);
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Bağlantı açılamadı: $e')));
@@ -549,7 +674,7 @@ class ProfileViewScreen extends ConsumerWidget {
     }
   }
 
-  void _showAddSkillDialog(BuildContext context, WidgetRef ref) {
+  void _showAddSkillDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController();
     showDialog(
       context: context,
@@ -587,33 +712,27 @@ class ProfileViewScreen extends ConsumerWidget {
             onPressed: () {
               final trimmedSkill = controller.text.trim();
               if (trimmedSkill.isEmpty) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Yetkinlik adı boş olamaz.')),
-                  );
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Yetkinlik adı boş olamaz.')),
+                );
                 return;
               }
               final currentSkills = ref
                   .read(userProfileNotifierProvider)
                   .skills;
               if (currentSkills.contains(trimmedSkill)) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Bu yetkinlik zaten mevcut.')),
-                  );
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Bu yetkinlik zaten mevcut.')),
+                );
                 return;
               }
               ref
                   .read(userProfileNotifierProvider.notifier)
                   .addSkill(trimmedSkill);
               Navigator.pop(context);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Yetkinlik başarıyla eklendi.')),
-                );
-              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Yetkinlik başarıyla eklendi.')),
+              );
             },
             child: const Text('Ekle'),
           ),
@@ -622,11 +741,7 @@ class ProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteConfirmDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String skillToDelete,
-  ) {
+  void _showDeleteConfirmDialog(BuildContext context, String skillToDelete) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -635,7 +750,7 @@ class ProfileViewScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           title: const Text("Yetkinlik Sil"),
-          content: Text("Yetkinliğini silmek istediğinize emin misiniz?"),
+          content: const Text("Yetkinliğini silmek istediğinize emin misiniz?"),
           actions: [
             TextButton(
               child: const Text("İptal"),
@@ -647,15 +762,10 @@ class ProfileViewScreen extends ConsumerWidget {
                 ref
                     .read(userProfileNotifierProvider.notifier)
                     .deleteSkill(skillToDelete);
-
-                Navigator.of(context).pop(); // Pencereyi kapat
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Yetkinlik başarıyla silindi.'),
-                    ),
-                  );
-                }
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Yetkinlik başarıyla silindi.')),
+                );
               },
             ),
           ],
@@ -664,10 +774,8 @@ class ProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  // Yetkinlikleri Yönetme Penceresi
   void _showManageSkillsDialog(
     BuildContext context,
-    WidgetRef ref,
     List<String> currentSkills,
   ) {
     showDialog(
@@ -676,7 +784,6 @@ class ProfileViewScreen extends ConsumerWidget {
         return Consumer(
           builder: (context, ref, child) {
             final skills = ref.watch(userProfileNotifierProvider).skills;
-
             return AlertDialog(
               title: const Text(
                 "Yetkinlikleri Düzenle",
@@ -693,19 +800,16 @@ class ProfileViewScreen extends ConsumerWidget {
                           final skill = skills[index];
                           return ListTile(
                             title: Text(skill),
-                            // Yan yana Düzenle ve Sil butonları
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // DÜZENLEME BUTONU (Kalem)
                                 IconButton(
                                   icon: const Icon(
                                     Icons.edit,
                                     color: kPrimaryColor,
                                   ),
                                   onPressed: () {
-                                    Navigator.pop(context); // Listeyi kapat
-
+                                    Navigator.pop(context);
                                     _showEditSingleSkillDialog(context, skill);
                                   },
                                 ),
@@ -714,11 +818,8 @@ class ProfileViewScreen extends ConsumerWidget {
                                     Icons.delete,
                                     color: Color.fromARGB(255, 0, 0, 0),
                                   ),
-                                  onPressed: () => _showDeleteConfirmDialog(
-                                    context,
-                                    ref,
-                                    skill,
-                                  ),
+                                  onPressed: () =>
+                                      _showDeleteConfirmDialog(context, skill),
                                 ),
                               ],
                             ),
@@ -739,10 +840,8 @@ class ProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  // Tek Bir Yetkinliği Düzenleme Penceresi
   void _showEditSingleSkillDialog(BuildContext context, String oldSkill) {
     TextEditingController controller = TextEditingController(text: oldSkill);
-
     showDialog(
       context: context,
       builder: (context) {
@@ -755,7 +854,7 @@ class ProfileViewScreen extends ConsumerWidget {
                 decoration: const InputDecoration(
                   hintText: "Yeni isim giriniz",
                 ),
-                autofocus: true, // Klavye otomatik açılsın
+                autofocus: true,
               ),
               actions: [
                 TextButton(
@@ -826,26 +925,21 @@ class ProfileViewScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // --- İkon Alanı ---
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.only(top: 36, bottom: 20),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 255, 255, 255),
-                      borderRadius: const BorderRadius.vertical(
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 255, 255, 255),
+                      borderRadius: BorderRadius.vertical(
                         top: Radius.circular(28),
                       ),
                     ),
-                    child: Column(
+                    child: const Column(
                       children: [
-                        Container(
+                        SizedBox(
                           width: 64,
                           height: 64,
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 255, 255, 255),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.logout_rounded,
                             color: Color(0xFFD32F2F),
                             size: 30,
@@ -854,8 +948,6 @@ class ProfileViewScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-
-                  // --- İçerik ---
                   Padding(
                     padding: const EdgeInsets.fromLTRB(28, 24, 28, 8),
                     child: Column(
@@ -884,13 +976,10 @@ class ProfileViewScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-
-                  // --- Butonlar ---
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                     child: Row(
                       children: [
-                        // Vazgeç
                         Expanded(
                           child: TextButton(
                             onPressed: () => Navigator.pop(context),
@@ -918,7 +1007,6 @@ class ProfileViewScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        // Çıkış Yap
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
@@ -957,6 +1045,92 @@ class ProfileViewScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildMyForumHorizontalCard(Map<String, dynamic> data, String docId) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const CommunityPage()),
+      ),
+      child: Container(
+        width: 200,
+        margin: const EdgeInsets.only(right: 14, bottom: 5),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.grey[100]!),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    data['category'] ?? "Genel",
+                    style: TextStyle(
+                      color: Colors.indigo[700],
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Icon(Icons.more_horiz, size: 16, color: Colors.grey[400]),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              data['title'] ?? "Başlıksız",
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.2,
+              ),
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                const Icon(
+                  Icons.forum_rounded,
+                  size: 14,
+                  color: Colors.orangeAccent,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  "${data['repliesCount'] ?? 0} Cevap",
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
