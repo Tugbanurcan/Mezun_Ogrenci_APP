@@ -3,9 +3,10 @@ import 'home_page.dart';
 import 'is_staj_page.dart';
 import 'mentor_profil.dart';
 import 'etkinlikler_page.dart';
-// Yeni oluşturduğumuz widget'ı import ediyoruz
 import 'widgets/bottom_nav_bar.dart';
 import 'chat_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MentorBulPage extends StatefulWidget {
   const MentorBulPage({super.key});
@@ -54,70 +55,24 @@ class _MentorBulPageState extends State<MentorBulPage> {
     // Diğer sayfalar (Chat, Etkinlik) eklendiğinde buraya else if ile ekleyebilirsin.
   }
 
-  final List<Map<String, String>> _tumMentorler = [
-    {
-      'isim': 'Selenay Demirpençe',
-      'unvan': 'Backend Developer',
-      'sirket': 'TrendTech',
-      'yil': '2020',
-      'aciklama': 'Java • Spring • Microservices',
-      'mail': 'selenay@trendtech.com',
-    },
-    {
-      'isim': 'Ahmet Yılmaz',
-      'unvan': 'iOS Developer',
-      'sirket': 'MobilityX',
-      'yil': '2019',
-      'aciklama': 'Swift • UIKit • Firebase',
-      'mail': 'ahmet@trendtech.com',
-    },
-    {
-      'isim': 'Elif Kaya',
-      'unvan': 'Data Scientist',
-      'sirket': 'InsightLab',
-      'yil': '2018',
-      'aciklama': 'Python • NLP • Deep Learning',
-      'mail': 'elif@trendtech.com',
-    },
-    {
-      'isim': 'Mehmet Demir',
-      'unvan': 'Frontend Developer',
-      'sirket': 'PixelSoft',
-      'yil': '2021',
-      'aciklama': 'React • TypeScript • UI/UX',
-      'mail': 'mehmet@trendtech.com',
-    },
-    {
-      'isim': 'Zeynep Öz',
-      'unvan': 'Cloud Engineer',
-      'sirket': 'Cloudify',
-      'yil': '2017',
-      'aciklama': 'AWS • DevOps • Docker',
-      'mail': 'zeynep@trendtech.com',
-    },
-    {
-      'isim': 'Kerem Çelik',
-      'unvan': 'Product Manager',
-      'sirket': 'NextMove',
-      'yil': '2016',
-      'aciklama': 'Roadmap • UX • Agile',
-      'mail': 'kerem@trendtech.com',
-    },
-  ];
-
   String _arama = '';
+  Stream<List<Map<String, dynamic>>> getMentorlerStream() {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('mentorApproved', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['uid'] = doc.id;
+            return data;
+          }).toList();
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
     // Arama filtresi
-    final filtreliListe = _tumMentorler.where((m) {
-      final q = _arama.toLowerCase();
-      if (q.isEmpty) return true;
-
-      return m['isim']!.toLowerCase().contains(q) ||
-          m['unvan']!.toLowerCase().contains(q) ||
-          m['sirket']!.toLowerCase().contains(q);
-    }).toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -178,16 +133,75 @@ class _MentorBulPageState extends State<MentorBulPage> {
 
             // 🔹 GRID
             Expanded(
-              child: GridView.builder(
-                itemCount: filtreliListe.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.68,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemBuilder: (context, index) {
-                  return _MentorKart(mentor: filtreliListe[index]);
+              child: StreamBuilder<List<Map<String, dynamic>>>(
+                stream: getMentorlerStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return const Center(
+                      child: Text('Mentorlar yüklenirken hata oluştu'),
+                    );
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text('Henüz onaylı mentor bulunmuyor'),
+                    );
+                  }
+
+                  final tumMentorler = snapshot.data!;
+
+                  final filtreliListe = tumMentorler.where((m) {
+                    final q = _arama.toLowerCase();
+                    if (q.isEmpty) return true;
+
+                    final isim = (m['name'] ?? '').toString().toLowerCase();
+                    final unvan = (m['unvan'] ?? '').toString().toLowerCase();
+                    final sirket = (m['sirket'] ?? '').toString().toLowerCase();
+                    final aciklama = (m['aciklama'] ?? '')
+                        .toString()
+                        .toLowerCase();
+
+                    return isim.contains(q) ||
+                        unvan.contains(q) ||
+                        sirket.contains(q) ||
+                        aciklama.contains(q);
+                  }).toList();
+
+                  if (filtreliListe.isEmpty) {
+                    return const Center(
+                      child: Text('Aramaya uygun mentor bulunamadı'),
+                    );
+                  }
+
+                  return GridView.builder(
+                    itemCount: filtreliListe.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.68,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                    itemBuilder: (context, index) {
+                      final mentor = filtreliListe[index];
+
+                      return _MentorKart(
+                        mentor: {
+                          'uid': mentor['uid']?.toString() ?? '',
+                          'isim': mentor['name']?.toString() ?? '',
+                          'unvan': mentor['unvan']?.toString() ?? '',
+                          'sirket': mentor['sirket']?.toString() ?? '',
+                          'yil': mentor['yil']?.toString() ?? '',
+                          'aciklama': mentor['aciklama']?.toString() ?? '',
+                          'mail': mentor['email']?.toString() ?? '',
+                        },
+                      );
+                    },
+                  );
                 },
               ),
             ),
@@ -211,7 +225,78 @@ class _MentorKart extends StatelessWidget {
 
   const _MentorKart({required this.mentor});
 
-  @override
+  String _generateChatId(String uid1, String uid2) {
+    final sorted = [uid1, uid2]..sort();
+    return '${sorted[0]}_${sorted[1]}';
+  }
+
+  Future<void> _sendMentorlukTalebi(BuildContext context) async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Önce giriş yapmalısın')));
+        return;
+      }
+
+      final mentorId = mentor['uid'] ?? '';
+
+      if (mentorId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Mentor bilgisi alınamadı')),
+        );
+        return;
+      }
+
+      if (mentorId == currentUser.uid) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kendine talep gönderemezsin')),
+        );
+        return;
+      }
+
+      final chatId = _generateChatId(currentUser.uid, mentorId);
+
+      final chatRef = FirebaseFirestore.instance
+          .collection('chats')
+          .doc(chatId);
+
+      final chatDoc = await chatRef.get();
+
+      // Chat yoksa oluştur
+      if (!chatDoc.exists) {
+        await chatRef.set({
+          'participants': [currentUser.uid, mentorId],
+          'createdAt': Timestamp.now(),
+        });
+      }
+
+      // 🔥 HER ZAMAN mesaj gönder
+      await chatRef.collection('messages').add({
+        'senderId': currentUser.uid,
+        'text': 'Merhaba iletişime geçebilir miyiz?',
+        'timestamp': Timestamp.now(), // ✅ DOĞRU
+        'isRead': false,
+      });
+
+      // 🔥 son mesajı güncelle
+      await chatRef.update({
+        'lastMessage': 'Merhaba iletişime geçebilir miyiz?',
+        'lastMessageAt': Timestamp.now(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mentorluk talebi gönderildi')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Hata oluştu: $e')));
+    }
+  }
+
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -236,7 +321,7 @@ class _MentorKart extends StatelessWidget {
           const SizedBox(height: 10),
 
           Text(
-            mentor['isim']!,
+            mentor['isim'] ?? "",
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             textAlign: TextAlign.center,
           ),
@@ -250,7 +335,7 @@ class _MentorKart extends StatelessWidget {
 
           const SizedBox(height: 4),
           Text(
-            mentor['aciklama']!,
+            mentor['aciklama'] ?? "",
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 11, color: Colors.black54),
           ),
@@ -265,15 +350,15 @@ class _MentorKart extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (_) => MentorProfilPage(
-                      isim: mentor['isim']!,
-                      unvan: mentor['unvan']!,
-                      sirket: mentor['sirket']!,
-                      yil: mentor['yil']!,
-                      aciklama: mentor['aciklama']!,
+                      isim: mentor['isim'] ?? "",
+                      unvan: mentor['unvan'] ?? "",
+                      sirket: mentor['sirket'] ?? "",
+                      yil: mentor['yil'] ?? "",
+                      aciklama: mentor['aciklama'] ?? "",
                       fotoUrl: "",
                       linkedin: "",
                       github: "",
-                      hakkinda: mentor['aciklama']!,
+                      hakkinda: mentor['aciklama'] ?? "",
                       yetkinlikler: const [],
                       iletisim: mentor['mail'] ?? "",
                     ),
@@ -295,7 +380,9 @@ class _MentorKart extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                await _sendMentorlukTalebi(context);
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black87,
                 padding: const EdgeInsets.symmetric(vertical: 4),

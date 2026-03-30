@@ -84,7 +84,12 @@ class _RegisterPageState extends State<RegisterPage>
             "name": nameController.text.trim(),
             "email": emailController.text.trim(),
             "userType": selectedUserType,
-            "isMentor": isMentor,
+            "mentorRequest": isMentor,
+            "mentorApproved": false,
+            "unvan": "",
+            "sirket": "",
+            "yil": "",
+            "aciklama": "",
             "createdAt": Timestamp.now(),
           });
 
@@ -244,7 +249,16 @@ class _RegisterPageState extends State<RegisterPage>
                     const SizedBox(height: 60),
 
                     // ---- Başlık ----
-                    Container(width: 52, height: 52),
+                    Container(
+                      width: 52,
+                      height: 52,
+
+                      child: const Icon(
+                        Icons.person_add_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
                     const SizedBox(height: 28),
                     const Center(
                       child: Text(

@@ -70,9 +70,11 @@ class _ForumEklePageState extends ConsumerState<ForumEklePage> {
         'title': _titleController.text.trim(),
         'description': _contentController.text.trim(),
         'category': selectedCategory,
+
         'author': currentUserName,
         'userId': currentUid,
         'userType': userType,
+
         'timestamp': FieldValue.serverTimestamp(),
         'repliesCount': 0,
       });
