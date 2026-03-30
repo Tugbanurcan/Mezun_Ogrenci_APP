@@ -107,20 +107,62 @@ class _AnaSayfaState extends State<AnaSayfa> {
           },
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NotificationPage()),
-                );
-              },
-              child: const Icon(
-                Icons.notifications_none_rounded,
-                color: Colors.black54,
-              ),
-            ),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('notifications')
+                .doc(FirebaseAuth.instance.currentUser?.uid)
+                .collection('items')
+                .where('isRead', isEqualTo: false)
+                .snapshots(),
+            builder: (context, snapshot) {
+              final bool hasNotifications =
+                  snapshot.hasData && snapshot.data!.docs.isNotEmpty;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const NotificationPage(),
+                      ),
+                    );
+                  },
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        hasNotifications
+                            ? Icons.notifications_active_rounded
+                            : Icons.notifications_none_rounded,
+                        color: hasNotifications
+                            ? const Color.fromARGB(255, 0, 0, 0)
+                            : Colors.black54,
+                        size: 26,
+                      ),
+                      if (hasNotifications)
+                        Positioned(
+                          top: 12,
+                          right: 0,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -300,32 +342,39 @@ class _AnaSayfaState extends State<AnaSayfa> {
                 ),
               ),
 
-              // Etkinlik kartı
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(12),
-                  child: const Column(
-                    children: [
-                      _EtkinlikSatiri(),
-                      SizedBox(height: 8),
-                      _EtkinlikSatiri(),
-                      SizedBox(height: 8),
-                      _EtkinlikSatiri(),
-                    ],
-                  ),
-                ),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('etkinlikler') // Firestore'daki koleksiyon adın
+                    .orderBy('tarih', descending: false)
+                    .limit(3)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text("Yakın zamanda etkinlik bulunmuyor."),
+                    );
+                  }
+
+                  // İŞTE SORDUĞUN KISIM BURASI:
+                  final eventDocs = snapshot.data!.docs;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: eventDocs.map((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        return ModernEtkinlikKarti(
+                          data: data,
+                        ); // Daha önce yazdığımız şık kart
+                      }).toList(),
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 30),
@@ -449,29 +498,128 @@ class _AnaSayfaState extends State<AnaSayfa> {
   void _onclick(int index) => _onItemTapped(index);
 }
 
-class _EtkinlikSatiri extends StatelessWidget {
-  const _EtkinlikSatiri({super.key});
+class ModernEtkinlikKarti extends StatelessWidget {
+  final Map<String, dynamic> data;
+  const ModernEtkinlikKarti({required this.data, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
-        Expanded(
-          child: Text(
-            '10 Mart: Atölye – “Sektörlere Giriş”',
-            style: TextStyle(fontSize: 14, color: Colors.black87),
+    final Timestamp? ts = data['tarih'] as Timestamp?;
+    final DateTime date = ts?.toDate() ?? DateTime.now();
+
+    // Formatlanmış tarih (Detay sayfasına göndermek için)
+    final String formattedDate = "${date.day}/${date.month}/${date.year}";
+
+    return GestureDetector(
+      onTap: () {
+        // Tıklanınca detay sayfasına yönlendir
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EtkinlikDetayPage(
+              baslik: data['baslik'] ?? 'Etkinlik',
+              tarih: formattedDate,
+              aciklama: data['aciklama'] ?? '',
+              imageUrl: data['imageUrl'] ?? "https://via.placeholder.com/150",
+            ),
           ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        Text(
-          'KATIL',
-          style: TextStyle(
-            color: Color(0xFF7AD0B0),
-            fontWeight: FontWeight.bold,
-          ),
+        child: Row(
+          children: [
+            // Takvim kutusu
+            Container(
+              width: 50,
+              height: 60,
+              decoration: BoxDecoration(
+                color: const Color(0xFF7AD0B0).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "${date.day}",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Color(0xFF47A397),
+                    ),
+                  ),
+                  Text(
+                    _getMonthName(date.month),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF47A397),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Yazılar
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data['baslik'] ?? 'Etkinlik',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Detayları görmek için tıkla",
+                    style: TextStyle(color: Colors.grey, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: Colors.grey,
+            ),
+          ],
         ),
-      ],
+      ),
     );
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      "Oca",
+      "Şub",
+      "Mar",
+      "Nis",
+      "May",
+      "Haz",
+      "Tem",
+      "Ağu",
+      "Eyl",
+      "Eki",
+      "Kas",
+      "Ara",
+    ];
+    return months[month - 1];
   }
 }
 

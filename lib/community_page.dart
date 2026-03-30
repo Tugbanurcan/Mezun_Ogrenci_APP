@@ -4,10 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile_view_screen.dart';
 import 'forum_ekle_page.dart';
+import 'notification_service.dart';
 import 'widgets/bottom_nav_bar.dart';
 
 class CommunityPage extends ConsumerStatefulWidget {
-  const CommunityPage({super.key});
+  final String? targetForumId; // Bildirimden gelen ID için alan ekledik
+
+  // Constructor'ı güncelledik
+  const CommunityPage({super.key, this.targetForumId});
 
   @override
   ConsumerState<CommunityPage> createState() => _CommunityPageState();
@@ -18,6 +22,26 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
 
   final Color primaryColor = const Color.fromARGB(255, 63, 81, 181);
   final Color backgroundColor = const Color(0xFFF8F9FE);
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.targetForumId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Bildirimden gelindiğinde bu fonksiyonu çağırıyoruz
+        _showCommentsFromNotification(widget.targetForumId!);
+      });
+    }
+  }
+
+  void _showCommentsFromNotification(String fId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _CommentsSheet(docId: fId, autoFocus: false),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -286,12 +310,19 @@ class ForumModernKart extends StatelessWidget {
     return "${date.day}/${date.month}/${date.year}";
   }
 
-  void _showComments(BuildContext context, {required bool focus}) {
+  void _showComments(
+    BuildContext context, {
+    required bool focus,
+    String? manualId,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _CommentsSheet(docId: docId, autoFocus: focus),
+      builder: (context) => _CommentsSheet(
+        docId: manualId ?? docId, // Bildirimden geldiyse manualId'yi kullan
+        autoFocus: focus,
+      ),
     );
   }
 }
@@ -299,8 +330,13 @@ class ForumModernKart extends StatelessWidget {
 class _CommentsSheet extends StatefulWidget {
   final String docId;
   final bool autoFocus;
+  final String? targetForumId;
 
-  const _CommentsSheet({required this.docId, required this.autoFocus});
+  const _CommentsSheet({
+    required this.docId,
+    required this.autoFocus,
+    this.targetForumId,
+  });
 
   @override
   State<_CommentsSheet> createState() => _CommentsSheetState();
@@ -321,8 +357,10 @@ class _CommentsSheetState extends State<_CommentsSheet> {
   @override
   void initState() {
     super.initState();
+
+    // Sayfa çizildikten hemen sonra bildirimden gelen ID varsa paneli açar
     if (widget.autoFocus) {
-      Future.delayed(const Duration(milliseconds: 300), () {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         _focusNode.requestFocus();
       });
     }
@@ -436,8 +474,19 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                               bottom: 12,
                             ),
                             child: GestureDetector(
-                              onTap: () =>
-                                  setState(() => _expandedCommentIds.add(cId)),
+                              onTap: () {
+                                setState(() {
+                                  if (_expandedCommentIds.contains(cId)) {
+                                    _expandedCommentIds.remove(
+                                      cId,
+                                    ); // Açıksa kapat
+                                  } else {
+                                    _expandedCommentIds.add(
+                                      cId,
+                                    ); // Kapalıysa aç
+                                  }
+                                });
+                              },
                               child: Row(
                                 children: [
                                   Container(
@@ -447,9 +496,11 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    "${replies.length} yanıtı gör",
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
+                                    _expandedCommentIds.contains(cId)
+                                        ? "Yanıtları gizle"
+                                        : "${replies.length} yanıtı gör",
+                                    style: const TextStyle(
+                                      color: Colors.grey,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -509,40 +560,70 @@ class _CommentsSheetState extends State<_CommentsSheet> {
               color: Colors.white,
               border: Border(top: BorderSide(color: Colors.grey[100]!)),
             ),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _commentController,
-                    focusNode: _focusNode,
-                    decoration: InputDecoration(
-                      hintText: _replyToAuthorName != null
-                          ? "@$_replyToAuthorName'e yanıt yaz..."
-                          : "Cevabınızı buraya yazın...",
-                      hintStyle: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 14,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border(top: BorderSide(color: Colors.grey[100]!)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: ["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"]
+                        .map((emoji) {
+                          return GestureDetector(
+                            onTap: () => _commentController.text += emoji,
+                            child: Text(
+                              emoji,
+                              style: const TextStyle(fontSize: 22),
+                            ),
+                          );
+                        })
+                        .toList(),
                   ),
                 ),
-                const SizedBox(width: 10),
-                CircleAvatar(
-                  backgroundColor: Colors.indigo,
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white, size: 20),
-                    onPressed: _submitComment,
-                  ),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _commentController,
+                        focusNode: _focusNode,
+                        decoration: InputDecoration(
+                          hintText: _replyToAuthorName != null
+                              ? "@$_replyToAuthorName'e yanıt yaz..."
+                              : "Cevabınızı buraya yazın...",
+                          hintStyle: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    CircleAvatar(
+                      backgroundColor: Colors.indigo,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.send,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        onPressed: _submitComment,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -568,42 +649,92 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    // Firestore'dan gerçek ismi çek
+    // 1. Firestore'dan mevcut kullanıcının gerçek ismini çek (Bildirimde görünmesi için)
     final userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
         .get();
-
     final String authorName = userDoc.data()?['name'] ?? 'Anonim';
 
     try {
+      // 2. Yorumu koleksiyona ekle
+      final commentData = {
+        'content': text,
+        'author': authorName,
+        'userId': user.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+        'likes': [],
+        'parentCommentId':
+            _replyToCommentId, // Yanıt ise ID dolu gelir, değilse null
+      };
+
       await FirebaseFirestore.instance
           .collection('forums')
           .doc(widget.docId)
           .collection('comments')
-          .add({
-            'content': text,
-            'author': authorName, // artık Firestore'dan geliyor
-            'userId': user.uid,
-            'timestamp': FieldValue.serverTimestamp(),
-            'likes': [],
-            'parentCommentId': _replyToCommentId,
-          });
+          .add(commentData);
 
+      // 3. Ana forum dökümanındaki toplam yorum sayısını artır
       await FirebaseFirestore.instance
           .collection('forums')
           .doc(widget.docId)
           .update({'repliesCount': FieldValue.increment(1)});
 
+      // --- 4. BİLDİRİM GÖNDERME MANTIĞI ---
+
+      if (_replyToCommentId != null) {
+        // A) Eğer bu bir YANIT ise: Yorumun sahibine bildirim gönder
+        // Önce yanıt verdiğimiz yorumun verisini çekmemiz lazım (userId için)
+        final parentCommentDoc = await FirebaseFirestore.instance
+            .collection('forums')
+            .doc(widget.docId)
+            .collection('comments')
+            .doc(_replyToCommentId)
+            .get();
+
+        final String? commentOwnerId = parentCommentDoc.data()?['userId'];
+
+        if (commentOwnerId != null && commentOwnerId != user.uid) {
+          await NotificationService.sendForumReply(
+            commentOwnerUserId: commentOwnerId,
+            replierName: authorName,
+            forumDocId: widget.docId,
+          );
+        }
+      } else {
+        // B) Eğer bu bir ANA YORUM ise: Forumun sahibine bildirim gönder
+        final forumDoc = await FirebaseFirestore.instance
+            .collection('forums')
+            .doc(widget.docId)
+            .get();
+
+        final String? forumOwnerId = forumDoc.data()?['userId'];
+        final String forumTitle = forumDoc.data()?['title'] ?? "Gönderiniz";
+
+        if (forumOwnerId != null && forumOwnerId != user.uid) {
+          await NotificationService.sendForumComment(
+            forumOwnerUserId: forumOwnerId,
+            commenterName: authorName,
+            forumDocId: widget.docId,
+            forumTitle: forumTitle,
+          );
+        }
+      }
+
+      // 5. Arayüzü temizle ve yanıt modundan çık
       _commentController.clear();
       _focusNode.unfocus();
-
       setState(() {
         _replyToCommentId = null;
         _replyToAuthorName = null;
       });
     } catch (e) {
-      debugPrint("Yorum gönderilirken hata: $e");
+      debugPrint("Yorum gönderilirken hata oluştu: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Yorum gönderilemedi.")));
+      }
     }
   }
 

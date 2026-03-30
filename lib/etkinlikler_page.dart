@@ -375,7 +375,12 @@ class EtkinlikDetayPage extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(imageUrl),
+              child: Image.network(
+                imageUrl,
+                width: double.infinity,
+                height: 250,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
