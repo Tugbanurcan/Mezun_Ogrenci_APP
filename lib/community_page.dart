@@ -18,7 +18,7 @@ class CommunityPage extends ConsumerStatefulWidget {
 }
 
 class _CommunityPageState extends ConsumerState<CommunityPage> {
-  int _selectedIndex = 2;
+  int _selectedIndex = -1;
 
   final Color primaryColor = const Color.fromARGB(255, 63, 81, 181);
   final Color backgroundColor = const Color(0xFFF8F9FE);

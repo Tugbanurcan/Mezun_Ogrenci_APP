@@ -16,7 +16,7 @@ class NotificationPage extends StatefulWidget {
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  int _selectedIndex = 1;
+  int _selectedIndex = -1;
 
   @override
   void initState() {
