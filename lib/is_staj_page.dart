@@ -161,15 +161,7 @@ class _IsStajPageState extends State<IsStajPage> {
       backgroundColor: Colors.white,
       elevation: 0,
       leadingWidth: 60,
-      leading: IconButton(
-        icon: const Icon(Icons.account_circle, color: Colors.black87, size: 28),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ProfileViewScreen()),
-          );
-        },
-      ),
+
       title: const Text(
         "İş & Staj İlanları",
         style: TextStyle(
@@ -179,31 +171,7 @@ class _IsStajPageState extends State<IsStajPage> {
         ),
       ),
       centerTitle: true,
-      actions: [
-        // 🆕 İLAN EKLEME BUTONU
-        IconButton(
-          icon: const Icon(Icons.add_box_outlined, color: Colors.black87),
-          tooltip: "Yeni İlan Ekle",
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const IsStajEklePage()),
-            );
-          },
-        ),
-        IconButton(
-          icon: const Icon(
-            Icons.notifications_none_rounded,
-            color: Colors.black54,
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const NotificationPage()),
-            );
-          },
-        ),
-      ],
+      actions: [],
     );
   }
 

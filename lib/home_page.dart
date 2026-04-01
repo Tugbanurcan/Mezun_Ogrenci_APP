@@ -174,48 +174,69 @@ class _AnaSayfaState extends State<AnaSayfa> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ⭐ BAŞLIK
+              // 🌟 Yeni Başlık Tasarımı
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 6,
+                  vertical: 12,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 26,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF7AD0B0),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Icon(
-                          Icons.groups_rounded,
-                          color: Color(0xFF7AD0B0),
-                          size: 24,
-                        ),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'Mentörlerimiz',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
                     Container(
-                      height: 4,
-                      width: 120,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF7AD0B0), Color(0xFF47A397)],
+                          colors: [Color(0xFF47A397), Color(0xFF7AD0B0)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                            padding: const EdgeInsets.all(6),
+                            child: const Icon(
+                              Icons.groups_rounded,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Mentörlerimiz',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      height: 3,
+                      width: 160,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF47A397), Color(0xFF7AD0B0)],
                         ),
                         borderRadius: BorderRadius.circular(4),
                       ),
@@ -225,109 +246,193 @@ class _AnaSayfaState extends State<AnaSayfa> {
               ),
 
               const SizedBox(height: 12),
+              //Mentör Listesi Kartı
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users') // Koleksiyon adın 'users'
+                    .where(
+                      'isMentor',
+                      isEqualTo: true,
+                    ) // SADECE MENTÖRLERİ GETİR
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(
+                      height: 230,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
 
-              // 🔸 PROFİL KARTLARI (PageView)
-              SizedBox(
-                height: 180,
-                child: PageView.builder(
-                  itemCount: profiller.length,
-                  controller: PageController(viewportFraction: 0.88),
-                  itemBuilder: (context, index) {
-                    final profil = profiller[index];
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const SizedBox(
+                      height: 230,
+                      child: Center(
+                        child: Text("Henüz sistemde mentör bulunmuyor."),
+                      ),
+                    );
+                  }
 
-                    return GestureDetector(
-                      onTap: () async {
-                        String otherUserId = profil['uid']!;
-                        String chatId = await createOrGetChat(otherUserId);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChatDetailPage(
-                              chatId: chatId,
-                              isim: profil['isim'] ?? '',
+                  final mentorDocs = snapshot.data!.docs;
+
+                  return SizedBox(
+                    height: 230,
+                    child: PageView.builder(
+                      itemCount: mentorDocs.length,
+                      controller: PageController(viewportFraction: 0.9),
+                      itemBuilder: (context, index) {
+                        final data =
+                            mentorDocs[index].data() as Map<String, dynamic>;
+                        final String uid = mentorDocs[index].id;
+
+                        final String isim = data['name'] ?? 'İsimsiz';
+                        final String unvan =
+                            data['title'] ?? (data['userType'] ?? 'Mezun');
+                        final String photoUrl = data['photoPath'] ?? "";
+
+                        return GestureDetector(
+                          onTap: () {
+                            // CHAT YERİNE PROFİLE GİT
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ProfileViewScreen(mentorUid: uid),
+                                // Not: ProfileViewScreen'e dışarıdan bir UID göndererek
+                                // o kişinin verilerini çekmesini sağlayabilirsin.
+                              ),
+                            );
+                          },
+                          child: Container(
+                            // ... (Mevcut dekorasyon ve padding kodların buraya gelecek)
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 15,
                             ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 10,
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF7AD0B0,
+                                  ).withOpacity(0.2),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            const CircleAvatar(
-                              radius: 35,
-                              backgroundColor: Color(0xFFE0E0E0),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    profil['isim'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    profil['unvan'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black54,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    profil['aciklama'] ?? '',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.black54,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    children: List.generate(
-                                      5,
-                                      (i) => Icon(
-                                        i == 0 ? Icons.star : Icons.star_border,
-                                        color: i == 0
-                                            ? Colors.amber
-                                            : Colors.grey,
-                                        size: 20,
+                                  // Profil Resmi Bölümü
+                                  Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Color(0xFF7AD0B0),
+                                          Color(0xFF47A397),
+                                        ],
                                       ),
                                     ),
+                                    child: CircleAvatar(
+                                      radius: 40,
+                                      backgroundColor: Colors.white,
+                                      child: CircleAvatar(
+                                        radius: 37,
+                                        backgroundColor: Colors.grey.shade100,
+                                        backgroundImage:
+                                            (photoUrl.isNotEmpty &&
+                                                photoUrl != "null")
+                                            ? NetworkImage(photoUrl)
+                                            : null,
+                                        child:
+                                            (photoUrl.isEmpty ||
+                                                photoUrl == "null")
+                                            ? const Icon(
+                                                Icons.person,
+                                                color: Colors.grey,
+                                                size: 38,
+                                              )
+                                            : null,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  // Bilgiler Bölümü
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          isim,
+                                          style: const TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(
+                                              0xFF7AD0B0,
+                                            ).withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            unvan,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Color(0xFF47A397),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        // Yıldızlar
+                                        Row(
+                                          children: List.generate(
+                                            5,
+                                            (i) => const Icon(
+                                              Icons.star_rounded,
+                                              color: Colors.amber,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 16,
+                                    color: Color(0xFF7AD0B0),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                          ),
+                        ); // return GestureDetector sonu
+                      },
+                    ),
+                  );
+                },
               ),
-
-              const SizedBox(height: 20),
 
               // ⭐ ETKİNLİK BAŞLIĞI
               const Padding(
@@ -380,14 +485,19 @@ class _AnaSayfaState extends State<AnaSayfa> {
               const SizedBox(height: 30),
 
               // 🔸 KARE BUTONLAR
+              // 🔸 KARE BUTONLAR Kısmı
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                ), // Padding'i biraz azalttık
                 child: Row(
                   children: [
                     Expanded(
                       child: _KareButon(
                         ikon: Icons.work_outline,
                         label: "CV",
+                        bgColor: Colors.orange.withOpacity(0.1), // Renk eklendi
+                        iconColor: Colors.orange, // Renk eklendi
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -396,11 +506,13 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: _KareButon(
                         ikon: Icons.description_outlined,
                         label: "FORUM",
+                        bgColor: Colors.blue.withOpacity(0.1), // Renk eklendi
+                        iconColor: Colors.blue, // Renk eklendi
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -409,11 +521,13 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: _KareButon(
                         ikon: Icons.people_outline,
                         label: "MÜLAKAT",
+                        bgColor: Colors.purple.withOpacity(0.1), // Renk eklendi
+                        iconColor: Colors.purple, // Renk eklendi
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -422,11 +536,13 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: _KareButon(
                         ikon: Icons.school,
                         label: "AKADEMİ",
+                        bgColor: Colors.green.withOpacity(0.1), // Renk eklendi
+                        iconColor: Colors.green, // Renk eklendi
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -520,7 +636,7 @@ class ModernEtkinlikKarti extends StatelessWidget {
               baslik: data['baslik'] ?? 'Etkinlik',
               tarih: formattedDate,
               aciklama: data['aciklama'] ?? '',
-              imageUrl: data['imageUrl'] ?? "https://via.placeholder.com/150",
+              imageUrl: data['imageUrl'] ?? "https://picsum.photos/200/300",
             ),
           ),
         );
@@ -626,65 +742,62 @@ class ModernEtkinlikKarti extends StatelessWidget {
 class _KareButon extends StatelessWidget {
   final IconData ikon;
   final String label;
+  final Color bgColor; // Renk parametreleri
+  final Color iconColor;
   final VoidCallback? onTap;
 
   const _KareButon({
     required this.ikon,
     required this.label,
+    required this.bgColor,
+    required this.iconColor,
     this.onTap,
-    super.key,
   });
-
-  Color _getColor(String label) {
-    switch (label) {
-      case "CV":
-        return const Color(0xFFE3F2FD);
-      case "FORUM":
-        return const Color(0xFFFFF3E0);
-      case "MÜLAKAT":
-        return const Color(0xFFE8F5E9);
-      case "AKADEMİ":
-        return const Color(0xFFF3E5F5);
-      default:
-        return const Color(0xFFE0E0E0);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    // Burada en dıştaki Expanded'ı sildik!
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            height: 80, // Mobilde daha iyi sığması için biraz küçültüldü
-            decoration: BoxDecoration(
-              color: _getColor(label),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+      child: Container(
+        // Genişliği otomatik ayarlasın diye kısıtlama koymuyoruz
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: Center(child: Icon(ikon, size: 30, color: Colors.black87)),
-          ),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 45, // Boyutu biraz küçülttük ki 4 tanesi yanyana sığsın
+              height: 45,
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(ikon, size: 22, color: iconColor),
+            ),
+            const SizedBox(height: 8),
+            Text(
               label,
-              maxLines: 1,
+              textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
+                fontSize: 10, // Fontu 10 yaptık taşma olmasın
+                fontWeight: FontWeight.w600,
+                color: Colors.black54,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

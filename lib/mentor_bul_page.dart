@@ -7,6 +7,7 @@ import 'widgets/bottom_nav_bar.dart';
 import 'chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'profile_view_screen.dart';
 
 class MentorBulPage extends StatefulWidget {
   const MentorBulPage({super.key});
@@ -346,21 +347,14 @@ class _MentorKart extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () {
+                // 🎯 BURAYI GÜNCELLEDİK:
+                // Artık yeni oluşturulan sayfaya değil, senin ana profil sayfana gidiyor.
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => MentorProfilPage(
-                      isim: mentor['isim'] ?? "",
-                      unvan: mentor['unvan'] ?? "",
-                      sirket: mentor['sirket'] ?? "",
-                      yil: mentor['yil'] ?? "",
-                      aciklama: mentor['aciklama'] ?? "",
-                      fotoUrl: "",
-                      linkedin: "",
-                      github: "",
-                      hakkinda: mentor['aciklama'] ?? "",
-                      yetkinlikler: const [],
-                      iletisim: mentor['mail'] ?? "",
+                    builder: (_) => ProfileViewScreen(
+                      mentorUid:
+                          mentor['uid'], // Firestore'dan gelen UID'yi gönderiyoruz
                     ),
                   ),
                 );

@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'notification_service.dart'; // ← YENİ: servis dosyası
+import 'notification_service.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'community_page.dart';
 import 'is_staj_page.dart';
 import 'etkinlikler_page.dart';
+import 'chat_page.dart';
+import 'chat_detail_page.dart';
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -20,11 +22,9 @@ class _NotificationPageState extends State<NotificationPage> {
   @override
   void initState() {
     super.initState();
-    // Sayfa açılınca 24 saatten eski bildirimleri Firestore'dan sil
     NotificationService.deleteOlderThan24h();
   }
 
-  // Zaman formatlama (aynı kalıyor)
   String _formatTimestamp(Timestamp? timestamp) {
     if (timestamp == null) return "Az önce";
     final date = timestamp.toDate();
@@ -35,53 +35,116 @@ class _NotificationPageState extends State<NotificationPage> {
     return "${date.day}/${date.month}/${date.year}";
   }
 
-  void _handleNotificationClick(
+  Future<void> _handleNotificationClick(
     BuildContext context,
     Map<String, dynamic> data,
   ) async {
     final String type = data['type'] ?? "";
     final String? relatedId = data['relatedId'];
 
-    if (relatedId == null) return;
-
-    // 1. Forum ile ilgili bildirimler (Yorum veya Yanıt)
-    if (type == "forum_comment" || type == "forum_reply") {
-      // Önce forumun verilerini Firestore'dan çekmemiz lazım
-      // Çünkü ForumModernKart bizden 'data' bekliyor
-      final forumDoc = await FirebaseFirestore.instance
-          .collection('forums')
-          .doc(relatedId)
-          .get();
-
-      if (forumDoc.exists && mounted) {
-        final forumData = forumDoc.data() as Map<String, dynamic>;
-
-        // Burası kritik: Kullanıcıyı CommunityPage'e gönderip,
-        // orada otomatik olarak o forumun yorumlar panelini açtırabiliriz.
-        // Ama en basiti, direkt CommunityPage'e yönlendirmektir.
+    switch (type) {
+      // ── Forum yorumu veya yanıtı ──────────────────────────────────────
+      // HATA DÜZELTİLDİ: targetForumId artık geçiriliyor
+      case "forum_comment":
+      case "forum_reply":
+        if (relatedId == null) return;
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const CommunityPage()),
+          MaterialPageRoute(
+            builder: (_) => CommunityPage(targetForumId: relatedId), // ✅
+          ),
         );
+        break;
 
-        // Not: Eğer spesifik olarak o forumun yorumlarını açtırmak istersen
-        // CommunityPage'e bir 'initialForumId' parametresi eklememiz gerekir.
-      }
+      // ── Yeni iş/staj ilanı ───────────────────────────────────────────
+      case "new_job":
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const IsStajPage()),
+        );
+        break;
+
+      // ── Yeni etkinlik ────────────────────────────────────────────────
+      case "new_event":
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const EtkinliklerPage()),
+        );
+        break;
+
+      // ── Mesaj bildirimi ──────────────────────────────────────────────
+      // HATA DÜZELTİLDİ: new_message artık ele alınıyor
+      case "new_message":
+        if (relatedId == null) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatDetailPage(
+              chatId: relatedId,
+              isim: data['senderName'] ?? "Mesaj", // bildirimde senderName var
+            ),
+          ),
+        );
+        break;
+
+      // ── Mentör başvurusu onaylandı ───────────────────────────────────
+      // HATA DÜZELTİLDİ: mentor bildirimleri artık ele alınıyor
+      case "mentor_approved":
+        _showMentorResultDialog(context, approved: true);
+        break;
+
+      // ── Mentör başvurusu reddedildi ──────────────────────────────────
+      case "mentor_rejected":
+        _showMentorResultDialog(context, approved: false);
+        break;
+
+      // ── Admin'e gelen mentör talebi bildirimi ────────────────────────
+      case "mentor_request":
+        // relatedId burada başvuran kullanıcının userId'si
+        // Admin paneli varsa buradan açılabilir:
+        // Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMentorRequestsPage()));
+        break;
     }
-    // 2. İş/Staj bildirimi
-    else if (type == "new_job") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const IsStajPage()),
-      );
-    }
-    // 3. Etkinlik bildirimi
-    else if (type == "new_event") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const EtkinliklerPage()),
-      );
-    }
+  }
+
+  void _showMentorResultDialog(BuildContext context, {required bool approved}) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(
+              approved ? Icons.check_circle : Icons.cancel,
+              color: approved ? Colors.green : Colors.red,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              approved ? "Başvuru Onaylandı" : "Başvuru Reddedildi",
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Text(
+          approved
+              ? "Tebrikler! Artık mentör olarak listeleniyorsunuz."
+              : "Mentör başvurunuz şu an için onaylanmadı. Daha sonra tekrar başvurabilirsiniz.",
+          style: const TextStyle(fontSize: 14, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "Tamam",
+              style: TextStyle(
+                color: Color(0xFF4F46E5),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -97,10 +160,8 @@ class _NotificationPageState extends State<NotificationPage> {
             icon: const Icon(Icons.more_vert, color: Colors.black87),
             onSelected: (value) async {
               if (value == "read") {
-                // ESKİ: markAllAsRead() → YENİ: Firestore'a yaz
                 await NotificationService.markAllAsRead();
               } else if (value == "delete") {
-                // ESKİ: deleteAllNotifications() → YENİ: Firestore'dan sil
                 await NotificationService.deleteAll();
               }
             },
@@ -154,7 +215,6 @@ class _NotificationPageState extends State<NotificationPage> {
               final String notifId = doc.id;
 
               return Dismissible(
-                // ESKİ: UniqueKey() → YENİ: ValueKey(notifId) — daha stabil
                 key: ValueKey(notifId),
                 direction: DismissDirection.startToEnd,
                 background: Container(
@@ -168,10 +228,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   ),
                 ),
                 onDismissed: (_) async {
-                  // ESKİ: notifications.removeAt(index)
-                  // YENİ: Firestore'dan sil
                   await NotificationService.delete(notifId);
-
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -184,12 +241,9 @@ class _NotificationPageState extends State<NotificationPage> {
                 },
                 child: GestureDetector(
                   onTap: () async {
-                    // 1. Bildirimi okundu işaretle (Zaten kodunda vardı)
                     await NotificationService.markAsRead(notifId);
-
-                    // 2. İlgili sayfaya yönlendir
                     if (mounted) {
-                      _handleNotificationClick(context, data);
+                      await _handleNotificationClick(context, data);
                     }
                   },
                   child: AnimatedContainer(
@@ -204,7 +258,6 @@ class _NotificationPageState extends State<NotificationPage> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      // ESKİ: notif["isRead"] → YENİ: data['isRead']
                       color: isRead
                           ? const Color(0xFFF2F2F2)
                           : const Color(0xFFE8D5FF),
@@ -214,7 +267,6 @@ class _NotificationPageState extends State<NotificationPage> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ESKİ: notif["icon"] → YENİ: data['icon']
                         Text(
                           data['icon'] ?? "🔔",
                           style: const TextStyle(fontSize: 28),
@@ -224,7 +276,6 @@ class _NotificationPageState extends State<NotificationPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // ESKİ: notif["title"] → YENİ: data['title']
                               Text(
                                 data['title'] ?? "",
                                 style: TextStyle(
@@ -239,7 +290,6 @@ class _NotificationPageState extends State<NotificationPage> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              // YENİ: zaman damgası eklendi
                               Text(
                                 _formatTimestamp(
                                   data['timestamp'] as Timestamp?,
@@ -252,7 +302,6 @@ class _NotificationPageState extends State<NotificationPage> {
                             ],
                           ),
                         ),
-                        // YENİ: okunmadı noktası
                         if (!isRead)
                           Container(
                             width: 8,

@@ -27,9 +27,10 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
   void initState() {
     super.initState();
     if (widget.targetForumId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Bildirimden gelindiğinde bu fonksiyonu çağırıyoruz
-        _showCommentsFromNotification(widget.targetForumId!);
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) {
+          _showCommentsFromNotification(widget.targetForumId!);
+        }
       });
     }
   }
@@ -442,8 +443,8 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                 //     parentCommentId alanıyla yapılıyor, @-string ile değil ---
                 final mainComments = allDocs.where((doc) {
                   final d = doc.data() as Map<String, dynamic>;
-                  return d['parentCommentId'] ==
-                      null; // parentCommentId yoksa ana yorum
+                  return !d.containsKey('parentCommentId') ||
+                      d['parentCommentId'] == null;
                 }).toList();
 
                 return ListView.builder(
@@ -664,8 +665,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
         'userId': user.uid,
         'timestamp': FieldValue.serverTimestamp(),
         'likes': [],
-        'parentCommentId':
-            _replyToCommentId, // Yanıt ise ID dolu gelir, değilse null
+        if (_replyToCommentId != null) 'parentCommentId': _replyToCommentId,
       };
 
       await FirebaseFirestore.instance
@@ -678,7 +678,12 @@ class _CommentsSheetState extends State<_CommentsSheet> {
       await FirebaseFirestore.instance
           .collection('forums')
           .doc(widget.docId)
-          .update({'repliesCount': FieldValue.increment(1)});
+          .set(
+            {'repliesCount': FieldValue.increment(1)},
+            SetOptions(
+              merge: true,
+            ), // sadece bu alanı günceller, diğerlerine dokunmaz
+          );
 
       // --- 4. BİLDİRİM GÖNDERME MANTIĞI ---
 
