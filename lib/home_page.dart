@@ -173,73 +173,82 @@ class _AnaSayfaState extends State<AnaSayfa> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ⭐ BAŞLIK
               // 🌟 Yeni Başlık Tasarımı
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF47A397), Color(0xFF7AD0B0)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                    Column(
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF1D9E75),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF9FE1CB),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.2),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF9FE1CB),
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                            padding: const EdgeInsets.all(6),
-                            child: const Icon(
-                              Icons.groups_rounded,
-                              color: Colors.white,
-                              size: 26,
+                            const SizedBox(width: 4),
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFF9FE1CB),
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Mentörlerimiz',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
-                    Container(
-                      height: 3,
-                      width: 160,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF47A397), Color(0xFF7AD0B0)],
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Mentörlerimiz',
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                         ),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Kariyer rehberlerin burada',
+                          style: TextStyle(fontSize: 11, color: Colors.black45),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -249,11 +258,8 @@ class _AnaSayfaState extends State<AnaSayfa> {
               //Mentör Listesi Kartı
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
-                    .collection('users') // Koleksiyon adın 'users'
-                    .where(
-                      'isMentor',
-                      isEqualTo: true,
-                    ) // SADECE MENTÖRLERİ GETİR
+                    .collection('users')
+                    .where('mentorApproved', isEqualTo: true)
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
