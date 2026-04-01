@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'etkinlikler_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart'; // Tarih formatlamak için (pubspec.yaml'a eklemeyi unutma)
 
-// Projenin ana renk paleti (Mor)
 const Color kPrimaryColor = Color(0xFFA65DD4);
-// Arka plan rengi (IsStajPage ile aynı)
 const Color kBackgroundColor = Color(0xFFF9F9F9);
 
 class IsStajEklePage extends StatefulWidget {
@@ -14,7 +14,6 @@ class IsStajEklePage extends StatefulWidget {
 }
 
 class _IsStajEklePageState extends State<IsStajEklePage> {
-  // Form anahtarı (Validasyon işlemleri için)
   final _formKey = GlobalKey<FormState>();
 
   // Veri Giriş Kontrolcüleri
@@ -24,12 +23,11 @@ class _IsStajEklePageState extends State<IsStajEklePage> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  // Seçilen İlan Türü (Varsayılan: Staj)
   String _selectedType = 'Staj';
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    // Sayfa kapandığında bellek temizliği
     _titleController.dispose();
     _companyController.dispose();
     _locationController.dispose();
@@ -38,23 +36,73 @@ class _IsStajEklePageState extends State<IsStajEklePage> {
     super.dispose();
   }
 
-  void _savePost() {
+  // 📅 Tarih Seçici Fonksiyonu
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(), // Geçmiş tarihler seçilemesin
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: kPrimaryColor, // Takvim ana rengi
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        // Tarihi gün.ay.yıl formatında yazdırır
+        _dateController.text = DateFormat('dd.MM.yyyy').format(picked);
+      });
+    }
+  }
+
+  // ⭐ FIRESTORE KAYIT FONKSİYONU
+  Future<void> _savePost() async {
     if (_formKey.currentState!.validate()) {
-      // ---------------------------------------------------------
-      // BURAYA İLERİDE DATABASE KAYIT KODLARI GELECEK (Firebase vb.)
-      // Şimdilik sadece simülasyon yapıyoruz.
-      // ---------------------------------------------------------
+      setState(() => _isLoading = true);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('İlan başarıyla oluşturuldu ve onaya gönderildi!'),
-          backgroundColor: kPrimaryColor,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      try {
+        final String uid = FirebaseAuth.instance.currentUser!.uid;
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final String realName = userDoc.data()?['name'] ?? "Bilinmeyen Üye";
 
-      // İşlem bitince sayfayı kapatıp geri dön
-      Navigator.pop(context);
+        await FirebaseFirestore.instance.collection('job_postings').add({
+          'title': _titleController.text.trim(),
+          'company': _companyController.text.trim(),
+          'type': _selectedType,
+          'location': _locationController.text.trim(),
+          'deadline': _dateController.text.trim(),
+          'description': _descriptionController.text.trim(),
+          'status': 'pending',
+          'createdAt': FieldValue.serverTimestamp(),
+          'userId': uid,
+          'userName': realName,
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('İlan onaya gönderildi!'), backgroundColor: Colors.green),
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -69,56 +117,23 @@ class _IsStajEklePageState extends State<IsStajEklePage> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Yeni İlan Oluştur",
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
+        title: const Text("Yeni İlan Oluştur",
+            style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18)),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: kPrimaryColor))
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // BİLGİLENDİRME KARTI
-              Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: kPrimaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: kPrimaryColor.withOpacity(0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline, color: kPrimaryColor),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        "Eklediğiniz ilanlar, yönetici onayından geçtikten sonra 'İş & Staj' sayfasında yayınlanacaktır.",
-                        style: TextStyle(
-                          color: kPrimaryColor.withOpacity(0.8),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _buildInfoCard(),
               const SizedBox(height: 25),
-
-              const Text(
-                "İlan Detayları",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
+              const Text("İlan Detayları", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 15),
-
-              // 1. BAŞLIK
               _buildCustomTextField(
                 controller: _titleController,
                 label: "Pozisyon / İlan Başlığı",
@@ -126,8 +141,6 @@ class _IsStajEklePageState extends State<IsStajEklePage> {
                 icon: Icons.title,
               ),
               const SizedBox(height: 15),
-
-              // 2. ŞİRKET ADI
               _buildCustomTextField(
                 controller: _companyController,
                 label: "Şirket Adı",
@@ -135,86 +148,36 @@ class _IsStajEklePageState extends State<IsStajEklePage> {
                 icon: Icons.business,
               ),
               const SizedBox(height: 15),
-
-              // 3. İLAN TÜRÜ SEÇİMİ (Chips)
-              const Text(
-                "Çalışma Türü",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              const Text("Çalışma Türü", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
               const SizedBox(height: 10),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildTypeChip("Staj"),
-                    const SizedBox(width: 10),
-                    _buildTypeChip("Tam Zamanlı"),
-                    const SizedBox(width: 10),
-                    _buildTypeChip("Yarı Zamanlı"),
-                    const SizedBox(width: 10),
-                    _buildTypeChip("Remote"),
-                  ],
-                ),
-              ),
+              _buildTypeSelection(),
               const SizedBox(height: 20),
-
-              // 4. KONUM
               _buildCustomTextField(
                 controller: _locationController,
                 label: "Konum",
-                hint: "Örn: İstanbul (Maslak) / Uzaktan",
+                hint: "Örn: İstanbul / Remote",
                 icon: Icons.location_on_outlined,
               ),
               const SizedBox(height: 15),
-
-              // 5. SON BAŞVURU TARİHİ (Opsiyonel manuel giriş şimdilik)
+              // 📅 TAKVİM TETİKLEYİCİ ALAN
               _buildCustomTextField(
                 controller: _dateController,
                 label: "Son Başvuru Tarihi",
-                hint: "Örn: 30 Aralık 2025",
-                icon: Icons.calendar_today_outlined,
-                keyboardType: TextInputType.datetime,
+                hint: "Tarih seçmek için tıklayın",
+                icon: Icons.calendar_month_outlined,
+                readOnly: true, // Elle yazmayı engeller
+                onTap: () => _selectDate(context), // Tıklayınca takvim açılır
               ),
               const SizedBox(height: 15),
-
-              // 6. AÇIKLAMA
               _buildCustomTextField(
                 controller: _descriptionController,
-                label: "İlan Açıklaması & Şartlar",
-                hint: "Aranan nitelikleri ve iş tanımını detaylıca yazınız...",
+                label: "İlan Açıklaması",
+                hint: "Nitelikleri ve detayları yazınız...",
                 icon: Icons.description_outlined,
                 maxLines: 5,
               ),
-
               const SizedBox(height: 30),
-
-              // KAYDET BUTONU
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimaryColor,
-                    elevation: 5,
-                    shadowColor: kPrimaryColor.withOpacity(0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  onPressed: _savePost,
-                  child: const Text(
-                    "İlanı Yayınla",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+              _buildSubmitButton(),
               const SizedBox(height: 30),
             ],
           ),
@@ -223,88 +186,104 @@ class _IsStajEklePageState extends State<IsStajEklePage> {
     );
   }
 
-  // Yardımcı Widget: Özel Text Alanı
+  // --- Yardımcı Widgetlar ---
+
+  Widget _buildInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: kPrimaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kPrimaryColor.withOpacity(0.3)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.info_outline, color: kPrimaryColor),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              "İlanlar, yönetici onayından geçtikten sonra yayınlanacaktır.",
+              style: TextStyle(color: kPrimaryColor, fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypeSelection() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: ["Staj", "Tam Zamanlı", "Yarı Zamanlı", "Remote"]
+            .map((type) => Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: _buildTypeChip(type),
+        ))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildTypeChip(String label) {
+    bool isSelected = _selectedType == label;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedType = label),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? kPrimaryColor : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? kPrimaryColor : Colors.grey.shade300),
+        ),
+        child: Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.black54, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kPrimaryColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
+        ),
+        onPressed: _isLoading ? null : _savePost,
+        child: const Text("İlanı Yayınla",
+            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
   Widget _buildCustomTextField({
     required TextEditingController controller,
     required String label,
     required String hint,
     required IconData icon,
     int maxLines = 1,
-    TextInputType keyboardType = TextInputType.text,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
-      keyboardType: keyboardType,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return "$label boş bırakılamaz.";
-        }
-        return null;
-      },
+      readOnly: readOnly,
+      onTap: onTap,
+      validator: (value) => (value == null || value.isEmpty) ? "$label boş bırakılamaz." : null,
+      style: const TextStyle(fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
         prefixIcon: Icon(icon, color: kPrimaryColor.withOpacity(0.7)),
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kPrimaryColor, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 16,
-        ),
-      ),
-    );
-  }
-
-  // Yardımcı Widget: Seçim Kutucuğu (Chip)
-  Widget _buildTypeChip(String label) {
-    bool isSelected = _selectedType == label;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedType = label;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? kPrimaryColor : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? kPrimaryColor : Colors.grey.shade300,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: kPrimaryColor.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : [],
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black54,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kPrimaryColor)),
       ),
     );
   }
