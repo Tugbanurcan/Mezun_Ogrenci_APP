@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -27,6 +28,8 @@ class _LoginPageState extends State<LoginPage>
   @override
   void initState() {
     super.initState();
+    _loadRememberMe();
+
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -40,6 +43,20 @@ class _LoginPageState extends State<LoginPage>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _animController!, curve: Curves.easeOut));
     _animController!.forward();
+  }
+
+  Future<void> _loadRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    bool remember = prefs.getBool('remember_me') ?? false;
+
+    if (remember) {
+      setState(() {
+        _rememberMe = true;
+        emailController.text = prefs.getString('email') ?? '';
+        passwordController.text = prefs.getString('password') ?? '';
+      });
+    }
   }
 
   @override
@@ -60,6 +77,17 @@ class _LoginPageState extends State<LoginPage>
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
+      // ✅ EKLENEN KISIM
+      final prefs = await SharedPreferences.getInstance();
+
+      if (_rememberMe) {
+        await prefs.setBool('remember_me', true);
+        await prefs.setString('email', emailController.text.trim());
+        await prefs.setString('password', passwordController.text.trim());
+      } else {
+        await prefs.clear();
+      }
 
       if (!mounted) return;
       Navigator.pushReplacement(

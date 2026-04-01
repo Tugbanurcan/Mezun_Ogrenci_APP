@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_page.dart';
 import 'chat_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'notification_service.dart';
 
 class ChatDetailPage extends StatefulWidget {
   final String chatId;
@@ -26,29 +27,58 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   }
 
   void _sendMessage() async {
-    if (_controller.text.trim().isEmpty) return;
+    final messageText = _controller.text.trim();
+    if (messageText.isEmpty) return;
 
-    // mesajı kaydet
+    _controller.clear();
+
+    // 1. Mesajı Kaydet
     await FirebaseFirestore.instance
         .collection('chats')
         .doc(widget.chatId)
         .collection('messages')
         .add({
-          'text': _controller.text.trim(),
+          'text': messageText,
           'senderId': currentUser,
           'timestamp': FieldValue.serverTimestamp(),
         });
 
-    // chat listesi için güncelle
+    // 2. Chat Listesi Güncellemesi
     await FirebaseFirestore.instance
         .collection('chats')
         .doc(widget.chatId)
         .update({
-          'lastMessage': _controller.text.trim(),
+          'lastMessage': messageText,
           'timestamp': FieldValue.serverTimestamp(),
         });
 
-    _controller.clear();
+    // 3. 🔔 BİLDİRİM GÖNDERME (SENİN SERVİSİNE UYGUN HALE GETİRİLDİ)
+    try {
+      final chatDoc = await FirebaseFirestore.instance
+          .collection('chats')
+          .doc(widget.chatId)
+          .get();
+      final List participants = chatDoc['participants'];
+      final receiverId = participants.firstWhere((id) => id != currentUser);
+
+      // Gönderen ismini bul
+      final senderDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser)
+          .get();
+      final senderName = senderDoc.data()?['name'] ?? "Bir kullanıcı";
+
+      // ✅ SENİN YAZDIĞIN SERVİSİ ÇAĞIRIYORUZ
+      await NotificationService.sendNewMessage(
+        receiverUserId: receiverId,
+        senderName: senderName,
+        conversationId: widget.chatId,
+      );
+
+      print("Bildirim başarıyla servis üzerinden gönderildi.");
+    } catch (e) {
+      print("Bildirim gönderilirken hata: $e");
+    }
   }
 
   @override

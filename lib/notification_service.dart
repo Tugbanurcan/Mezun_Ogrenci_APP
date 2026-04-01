@@ -8,6 +8,7 @@ enum NotificationType {
   newJob, // Yeni iş/staj ilanı eklendiğinde
   newEvent, // Yeni etkinlik eklendiğinde
   newMessage, // Birisi sana mesaj gönderdiğinde
+  commentLike,
 }
 
 extension NotificationTypeExtension on NotificationType {
@@ -21,6 +22,8 @@ extension NotificationTypeExtension on NotificationType {
         return "💼";
       case NotificationType.newEvent:
         return "🗓";
+      case NotificationType.commentLike:
+        return "❤️";
       case NotificationType.newMessage:
         return "✉️";
     }
@@ -36,6 +39,8 @@ extension NotificationTypeExtension on NotificationType {
         return "new_job";
       case NotificationType.newEvent:
         return "new_event";
+      case NotificationType.commentLike:
+        return "comment_like";
       case NotificationType.newMessage:
         return "new_message";
     }
@@ -307,5 +312,23 @@ class NotificationService {
       batch.delete(doc.reference);
     }
     await batch.commit();
+  }
+
+  static Future<void> sendCommentLike({
+    required String commentOwnerUserId,
+    required String likerName,
+    required String forumDocId,
+    required String commentId, // Yeni eklendi
+  }) async {
+    await _send(
+      targetUserId: commentOwnerUserId,
+      type: NotificationType.commentLike,
+      title: "$likerName bir yorumunuzu beğendi",
+      relatedId: forumDocId,
+      senderName: likerName,
+      // Ek bilgi olarak yorum ID'sini title veya farklı bir alanda taşıyabiliriz
+      // Ama en temizi relatedId içine "forumId|commentId" şeklinde birleştirmek:
+      // relatedId: "$forumDocId|$commentId",
+    );
   }
 }

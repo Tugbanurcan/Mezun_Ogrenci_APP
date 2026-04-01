@@ -18,7 +18,7 @@ class CommunityPage extends ConsumerStatefulWidget {
 }
 
 class _CommunityPageState extends ConsumerState<CommunityPage> {
-  int _selectedIndex = 2;
+  int _selectedIndex = -1;
 
   final Color primaryColor = const Color.fromARGB(255, 63, 81, 181);
   final Color backgroundColor = const Color(0xFFF8F9FE);
@@ -206,14 +206,28 @@ class ForumModernKart extends StatelessWidget {
                 CircleAvatar(
                   radius: 11,
                   backgroundColor: typeColor.withOpacity(0.1),
-                  child: Text(
-                    (data['author'] ?? "A")[0]
-                        .toUpperCase(), // userType[0] değil, author[0]
-                    style: TextStyle(
-                      color: typeColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(data['userId'])
+                        .get(),
+                    builder: (context, userSnap) {
+                      String currentName =
+                          data['author'] ?? "Anonim"; // Varsayılan eski isim
+                      if (userSnap.hasData && userSnap.data!.exists) {
+                        final userData =
+                            userSnap.data!.data() as Map<String, dynamic>;
+                        currentName = userData['name'] ?? currentName;
+                      }
+                      return Text(
+                        currentName,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black54,
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -747,9 +761,11 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     String commentId,
     List<dynamic> likes,
     bool isLiked,
+    String? commentOwnerId,
   ) async {
-    final String uid = FirebaseAuth.instance.currentUser?.uid ?? "";
-    if (uid.isEmpty) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final String uid = user.uid;
 
     final docRef = FirebaseFirestore.instance
         .collection('forums')
@@ -762,9 +778,34 @@ class _CommentsSheetState extends State<_CommentsSheet> {
         'likes': FieldValue.arrayRemove([uid]),
       });
     } else {
+      // 1. Beğeniyi ekle
       await docRef.update({
         'likes': FieldValue.arrayUnion([uid]),
       });
+
+      // 2. 🔔 BİLDİRİM GÖNDERME (EKSİK OLAN KISIM BURASI)
+      if (commentOwnerId != null && commentOwnerId != uid) {
+        try {
+          // Beğenen kişinin ismini bul
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .get();
+          final String likerName = userDoc.data()?['name'] ?? 'Bir kullanıcı';
+
+          // NotificationService'i çağır
+          await NotificationService.sendCommentLike(
+            commentOwnerUserId: commentOwnerId,
+            likerName: likerName,
+            forumDocId: widget.docId,
+            commentId:
+                commentId, // <--- EKSİK OLAN SATIR BURASI, BU PARAMETREYİ EKLE
+          );
+          print("Beğeni bildirimi başarıyla oluşturuldu.");
+        } catch (e) {
+          print("Beğeni bildirimi hatası: $e");
+        }
+      }
     }
   }
 
@@ -809,17 +850,37 @@ class _CommentsSheetState extends State<_CommentsSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      style: const TextStyle(color: Colors.black, fontSize: 13),
-                      children: [
-                        TextSpan(
-                          text: "$authorName ",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                  FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(data['userId'])
+                        .get(),
+                    builder: (context, userSnap) {
+                      String currentAuthor = data['author'] ?? "Anonim";
+                      if (userSnap.hasData && userSnap.data!.exists) {
+                        final userData =
+                            userSnap.data!.data() as Map<String, dynamic>;
+                        currentAuthor = userData['name'] ?? currentAuthor;
+                      }
+
+                      return RichText(
+                        text: TextSpan(
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 13,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: "$currentAuthor ",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextSpan(text: content),
+                          ],
                         ),
-                        TextSpan(text: content),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 6),
                   Row(
@@ -854,7 +915,8 @@ class _CommentsSheetState extends State<_CommentsSheet> {
               ),
             ),
             GestureDetector(
-              onTap: () => _toggleLike(commentId, likes, isLiked),
+              onTap: () =>
+                  _toggleLike(commentId, likes, isLiked, data['userId']),
               child: Column(
                 children: [
                   Icon(

@@ -15,7 +15,7 @@ class BolumHakkindaPage extends StatefulWidget {
 }
 
 class _BolumHakkindaPageState extends State<BolumHakkindaPage> {
-  int _selectedIndex = 2; // Ana sayfa seçili varsayılan
+  int _selectedIndex = -1; // Ana sayfa seçili varsayılan
 
   void _onItemTapped(int index) {
     setState(() {
