@@ -79,6 +79,17 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
         );
         break;
+      case "comment_like":
+        if (relatedId == null) return;
+        // Eğer yukarıdaki birleştirmeyi yaparsan splitting kullanabilirsin.
+        // Şimdilik direkt foruma gidişi garantiye alalım:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CommunityPage(targetForumId: relatedId),
+          ),
+        );
+        break;
       case "mentor_approved":
         _showMentorResultDialog(context, approved: true);
         break;
@@ -217,7 +228,7 @@ class _NotificationPageState extends State<NotificationPage> {
                 direction: DismissDirection.startToEnd,
                 onDismissed: (_) => NotificationService.delete(id),
                 background: Container(
-                  color: Colors.red,
+                  color: const Color.fromARGB(255, 255, 17, 0),
                   alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.only(left: 20),
                   child: const Icon(Icons.delete, color: Colors.white),
