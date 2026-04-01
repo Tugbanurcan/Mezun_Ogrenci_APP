@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage>
         password: passwordController.text.trim(),
       );
 
-      // ✅ BURAYI EKLE
+      // ✅ EKLENEN KISIM
       final prefs = await SharedPreferences.getInstance();
 
       if (_rememberMe) {
